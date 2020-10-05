@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Polytopia</title>
+
+</head>
+
+<body>
+  <h1>Polytopia transaction generator and signer</h1>
+    
+    <button onclick="register()">register</button>
+    <br /><br />
+    <button onclick="immigrate()">immigrate</button>
+    <br /><br />
+    <button onclick="shuffle()">shuffle</button>
+    <br /><br />
+    <input id="_id" type="number" placeholder="_id"><button onclick="vote()">vote</button>
+    <br /><br />
+    <input id="_account" type="text" placeholder="_account"><button onclick="verify()">verify</button>
+    <br /><br />
+    <input id="premeetDispute" type="checkbox"><button onclick="dispute()">dispute</button>
+    <br /><br />
+    <input id="premeetReassign" type="checkbox"><button onclick="reassign()">reassign</button>
+    <br /><br />
+    <label>Transaction data:</label><input id="calldata" type="text" placeholder="0x1b7e...">
+    
+<script>
+    
+    function register() {
+        document.getElementById("calldata").value = "0x1aa3a008"
+    }
+    function immigrate() {
+        document.getElementById("calldata").value = "0x0ca3a075"
+    }
+    function shuffle() {
+        document.getElementById("calldata").value = "0x2520bf04"
+    }
+    function vote() {
+        var id = Number(document.getElementById("_id").value)
+        document.getElementById("calldata").value = "0x0121b93f".concat(id.toString(16).padStart(64, 0))
+    }
+    function verify() {
+        var account = document.getElementById("_account").value
+        document.getElementById("calldata").value = "0x63a9c3d7".concat(account.padStart(64, 0))
+    }
+    function dispute() {
+        var premeet = Number(document.getElementById("premeetDispute").checked)
+        document.getElementById("calldata").value = "0x91ee7bbf".concat(String(premeet).padStart(64, 0))
+    }
+    function reassign() {
+        var premeet = Number(document.getElementById("premeetReassign").checked)
+        document.getElementById("calldata").value = "0x62fa2f1f".concat(String(premeet).padStart(64, 0))
+    }
+    
+</script>
+
+</body>
+</html>
