@@ -13,7 +13,9 @@
 <option value="immigrate">immigrate</option>    
 <option value="shuffle">shuffle</option>    
 <option value="vote">vote</option>    
-<option value="verify">verify</option>    
+<option value="verify">verify</option>
+<option value="completeVerification">completeVerification</option>
+<option value="claimPersonhood">claimPersonhood</option>    
 <option value="dispute">dispute</option>    
 <option value="reassign">ressign</option>    
 <option value="transfer">transfer</option>    
@@ -32,10 +34,16 @@
 </template>    
 <template id="vote">
     <input id="_id" type="number" placeholder="_id"><button onclick="vote()">vote</button>
-</template>    
+</template>
 <template id="verify">
     <input id="_account" type="text" placeholder="_account"><button onclick="verify()">verify</button>
-</template>    
+</template>
+<template id="completeVerification">
+    <button onclick="completeVerification()">completeVerification</button>
+</template>
+<template id="claimPersonhood">
+    <button onclick="claimPersonhood()">claimPersonhood</button>
+</template>
 <template id="dispute">
     <input id="premeetDispute" type="checkbox"><button onclick="dispute()">dispute</button>
 </template>    
@@ -151,6 +159,12 @@
         var data = "0x63a9c3d7".concat(account.padStart(64, 0))
         transactionData(data, 21000)
     }
+    function completeVerification() {
+        transactionData("0xa128644d", 21000)        
+    }
+    function claimPersonhood() {
+        transactionData("0xd5dffb27", 78773)        
+    }    
     function dispute() {
         var premeet = Number(document.getElementById("premeetDispute").checked)
         var data = "0x91ee7bbf".concat(String(premeet).padStart(64, 0))
