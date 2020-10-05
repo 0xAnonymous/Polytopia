@@ -152,7 +152,6 @@
         transactionData(data, 21000)
     }
     function dispute() {
-        viewCalldata(74)
         var premeet = Number(document.getElementById("premeetDispute").checked)
         var data = "0x91ee7bbf".concat(String(premeet).padStart(64, 0))
         transactionData(data, 21000)
