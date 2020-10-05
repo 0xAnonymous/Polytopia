@@ -19,90 +19,155 @@
 <option value="transfer">transfer</option>    
 </select>
 
-<div id="register" style="display: block">
+<div id="method"></div>    
+    
+<template id="register">
     <button onclick="register()">register</button>
-</div>    
-<div id="immigrate" style="display: none">
+</template>    
+<template id="immigrate">
     <button onclick="immigrate()">immigrate</button>
-
-</div>    
-<div id="shuffle" style="display: none">
+</template>    
+<template id="shuffle">
     <button onclick="shuffle()">shuffle</button>
-
-</div>    
-<div id="vote" style="display: none">
+</template>    
+<template id="vote">
     <input id="_id" type="number" placeholder="_id"><button onclick="vote()">vote</button>
-
-</div>    
-<div id="verify" style="display: none">
+</template>    
+<template id="verify">
     <input id="_account" type="text" placeholder="_account"><button onclick="verify()">verify</button>
-
-</div>    
-<div id="dispute" style="display: none">
+</template>    
+<template id="dispute">
     <input id="premeetDispute" type="checkbox"><button onclick="dispute()">dispute</button>
-
-</div>    
-<div id="reassign" style="display: none">
+</template>    
+<template id="reassign">
     <input id="premeetReassign" type="checkbox"><button onclick="reassign()">reassign</button>
-
-</div>    
-<div id="transfer" style="display: none">
+</template>    
+<template id="transfer">
     <input id="_to" placeholder="_to" type="text"><input id="_amount" placeholder="_amount" type="number"><select id="_token"><option value="0">Personhood</option><option value="1">Registration</option><option value="2">Immigration</option></select><button onclick="transfer()">transfer</button>
+</template>    
 
-</div>    
+<template id="transactionGenerator">
+    <div>
+        <label>Transaction data: </label><input id="calldata" type="text" placeholder="0x1b7e...">
+    </div>
+    <div>
+        <label>Nonce: </label><input id="nonce" type="number" placeholder="0" oninput="inputNonce()">
+    </div>
+    <div id="gasinput" style="display: none">
+    <label>Gas: </label><input id="gas" type="number" placeholder="21000" oninput="inputGas()">
+    </div>
+    <div id="gaspriceinput" style="display: none">
+    <label>Gas price: </label><input id="gasprice" type="number" value="5" oninput="inputGasPrice()">
+    </div>
+</template>   
 
-<div id="transactionData" style="display: none"><label>Transaction data: </label><input id="calldata" type="text" placeholder="0x1b7e..."></div>
+<div id="transaction"></div>
     
 <script>
-    var active = "register"
-    function viewMethod(selectObject) {
-        document.getElementById("transactionData").style.display = "none"
-        document.getElementById(active).style.display = "none"
-        active = selectObject.value
-        document.getElementById(selectObject.value).style.display = "block"
+    
+    var Polytopia = "0x12528bd2392f12d3d18828436814e41f50639dcd"
+    
+    var transaction = {
+            "to": "Polytopia",
+            "value": "0x00",
+            "gas": "",
+            "gasPrice": "",
+            "nonce": "",
+            "data": ""
+        }
+    
+    function initiate() {
+        loadMethod("register")
     }
-    function viewCalldata(size) {
+    initiate()
+    
+    function resetMethod() {
+        document.getElementById('methodLoaded').remove();
+    }
+    function loadMethod(_method) {
+        var div = document.createElement("div");
+        div.id = "methodLoaded";
+        document.getElementById("method").appendChild(div);
+        var method = document.getElementById(_method);
+        var clone = method.content.cloneNode(true)
+        document.querySelector('#methodLoaded').appendChild(clone);
+    }
+    function resetTransaction() {
+        if(document.getElementById("transactionLoaded")) document.getElementById('transactionLoaded').remove();
+    }
+    function loadTransaction() {
+        var div = document.createElement("div");
+        div.id = "transactionLoaded";
+        document.getElementById("transaction").appendChild(div);
+        var template = document.getElementById('transactionGenerator');
+        var clone = template.content.cloneNode(true)
+        document.querySelector('#transactionLoaded').appendChild(clone);
+    }
+    function generateTransaction() {
+        resetTransaction()
+        loadTransaction()
+    }
+    function viewMethod(selectObject) {
+        resetMethod()
+        resetTransaction()
+        loadMethod(selectObject.value)
+    }
+    function transactionData(data, size) {
+        generateTransaction()
+        document.getElementById("calldata").value = data
+        transaction.data = data
         document.getElementById("calldata").size = size
-        document.getElementById("transactionData").style.display = "block"
+    }
+    function inputNonce() {
+        transaction.nonce = "0x".concat(Number(document.getElementById("nonce").value).toString(16))
+        document.getElementById("gasinput").style.display = "block"
+        document.getElementById("gaspriceinput").style.display = "block"
+        transaction.gasPrice = 5
+    }
+    function inputGas() {
+        transaction.gas = document.getElementById("gas").value
+    }
+    function inputGasPrice() {
+        transaction.gasPrice = document.getElementById("gasprice").value
     }
     function register() {
-        viewCalldata(10)
-        document.getElementById("calldata").value = "0x1aa3a008"
+        transactionData("0x1aa3a008", 10)
+        document.getElementById("gas").value = 115469
+        transaction.gas = 115469
     }
     function immigrate() {
-        viewCalldata(10)
-        document.getElementById("calldata").value = "0x0ca3a075"
+        transactionData("0x0ca3a075", 10)
     }
     function shuffle() {
-        viewCalldata(10)
-        document.getElementById("calldata").value = "0x2520bf04"
+        transactionData("0x2520bf04", 10)
     }
     function vote() {
-        viewCalldata(74)
         var id = Number(document.getElementById("_id").value)
-        document.getElementById("calldata").value = "0x0121b93f".concat(id.toString(16).padStart(64, 0))
+        var data = "0x0121b93f".concat(id.toString(16).padStart(64, 0))
+        transactionData(data, 74)
     }
     function verify() {
-        viewCalldata(74)
         var account = document.getElementById("_account").value
-        document.getElementById("calldata").value = "0x63a9c3d7".concat(account.padStart(64, 0))
+        var data = "0x63a9c3d7".concat(account.padStart(64, 0))
+        transactionData(data, 74)
     }
     function dispute() {
         viewCalldata(74)
         var premeet = Number(document.getElementById("premeetDispute").checked)
-        document.getElementById("calldata").value = "0x91ee7bbf".concat(String(premeet).padStart(64, 0))
+        var data = "0x91ee7bbf".concat(String(premeet).padStart(64, 0))
+        transactionData(data, 74)
     }
     function reassign() {
-        viewCalldata(74)
         var premeet = Number(document.getElementById("premeetReassign").checked)
-        document.getElementById("calldata").value = "0x62fa2f1f".concat(String(premeet).padStart(64, 0))
+        var data = "0x62fa2f1f".concat(String(premeet).padStart(64, 0))
+        transactionData(data, 74)
     }
     function transfer() {
-        viewCalldata(202)
         var _to = document.getElementById("_to").value
         var _amount = document.getElementById("_amount").value
         var _token = document.getElementById("_token").value
-        document.getElementById("calldata").value = "0xdbe58c1f".concat(_to.padStart(64, 0)).concat(_amount.padStart(64, 0)).concat(_token.padStart(64, 0))
+        var data = "0xdbe58c1f".concat(_to.padStart(64, 0)).concat(_amount.padStart(64, 0)).concat(_token.padStart(64, 0))
+        transactionData(data, 202)
     }
 </script>
 
