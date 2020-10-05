@@ -45,10 +45,10 @@
     <button onclick="claimPersonhood()">claimPersonhood</button>
 </template>
 <template id="dispute">
-    <input id="premeetDispute" type="checkbox"><button onclick="dispute()">dispute</button>
+    <label>Premeet: </label><input id="premeetDispute" type="checkbox"><button onclick="dispute()">dispute</button>
 </template>    
 <template id="reassign">
-    <input id="premeetReassign" type="checkbox"><button onclick="reassign()">reassign</button>
+    <label>Premeet: </label><input id="premeetReassign" type="checkbox"><button onclick="reassign()">reassign</button>
 </template>    
 <template id="transfer">
     <input id="_to" placeholder="_to" type="text"><input id="_amount" placeholder="_amount" type="number"><select id="_token"><option value="0">Personhood</option><option value="1">Registration</option><option value="2">Immigration</option></select><button onclick="transfer()">transfer</button>
