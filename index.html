@@ -134,7 +134,6 @@
             resetMethod()
             document.getElementById("publickey").style.display = "none"
         }
-        
         loadKey()
         if(publicKey==undefined) return
 
@@ -204,10 +203,19 @@
     function intToHex(int) {
         var str = Number(int).toString(16)
         if(str.length%2 == 1) str = '0' + str
-        return str
+        return "0x".concat(str)
     }
     function sign() {
-        let tx = new ethereumjs.Tx(transaction)
+        let txParams = {
+            nonce:    intToHex(transaction.nonce),
+            gasPrice: intToHex(transaction.gasPrice), 
+            gasLimit: intToHex(transaction.gas),
+            to:       transaction.to, 
+            value:    '0x00',
+            data:     transaction.data
+        }
+        let tx = new ethereumjs.Tx(txParams)
+        console.log(tx)
         tx.sign(privateKey)
         let serializedTx = tx.serialize().toString('hex')
         document.getElementById("signature").style.display = "block"
