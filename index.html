@@ -112,11 +112,13 @@
         resetTransaction()
         loadMethod(selectObject.value)
     }
-    function transactionData(data, size) {
+    function transactionData(data, gas) {
         generateTransaction()
         document.getElementById("calldata").value = data
         transaction.data = data
-        document.getElementById("calldata").size = size
+        document.getElementById("calldata").size = data.length
+        document.getElementById("gas").value = gas
+        transaction.gas = gas
     }
     function inputNonce() {
         transaction.nonce = "0x".concat(Number(document.getElementById("nonce").value).toString(16))
@@ -131,43 +133,41 @@
         transaction.gasPrice = document.getElementById("gasprice").value
     }
     function register() {
-        transactionData("0x1aa3a008", 10)
-        document.getElementById("gas").value = 115469
-        transaction.gas = 115469
+        transactionData("0x1aa3a008", 115469)
     }
     function immigrate() {
-        transactionData("0x0ca3a075", 10)
+        transactionData("0x0ca3a075", 21000)
     }
     function shuffle() {
-        transactionData("0x2520bf04", 10)
+        transactionData("0x2520bf04", 21000)
     }
     function vote() {
         var id = Number(document.getElementById("_id").value)
         var data = "0x0121b93f".concat(id.toString(16).padStart(64, 0))
-        transactionData(data, 74)
+        transactionData(data, 21000)
     }
     function verify() {
         var account = document.getElementById("_account").value
         var data = "0x63a9c3d7".concat(account.padStart(64, 0))
-        transactionData(data, 74)
+        transactionData(data, 21000)
     }
     function dispute() {
         viewCalldata(74)
         var premeet = Number(document.getElementById("premeetDispute").checked)
         var data = "0x91ee7bbf".concat(String(premeet).padStart(64, 0))
-        transactionData(data, 74)
+        transactionData(data, 21000)
     }
     function reassign() {
         var premeet = Number(document.getElementById("premeetReassign").checked)
         var data = "0x62fa2f1f".concat(String(premeet).padStart(64, 0))
-        transactionData(data, 74)
+        transactionData(data, 21000)
     }
     function transfer() {
         var _to = document.getElementById("_to").value
         var _amount = document.getElementById("_amount").value
         var _token = document.getElementById("_token").value
         var data = "0xdbe58c1f".concat(_to.padStart(64, 0)).concat(_amount.padStart(64, 0)).concat(_token.padStart(64, 0))
-        transactionData(data, 202)
+        transactionData(data, 51919)
     }
 </script>
 
