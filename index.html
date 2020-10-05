@@ -8,50 +8,102 @@
 <body>
   <h1>Polytopia transaction generator and signer</h1>
     
+<select onchange="viewMethod(this)">
+<option value="register">register</option>
+<option value="immigrate">immigrate</option>    
+<option value="shuffle">shuffle</option>    
+<option value="vote">vote</option>    
+<option value="verify">verify</option>    
+<option value="dispute">dispute</option>    
+<option value="reassign">ressign</option>    
+<option value="transfer">transfer</option>    
+</select>
+
+<div id="register" style="display: block">
     <button onclick="register()">register</button>
-    <br /><br />
+</div>    
+<div id="immigrate" style="display: none">
     <button onclick="immigrate()">immigrate</button>
-    <br /><br />
+
+</div>    
+<div id="shuffle" style="display: none">
     <button onclick="shuffle()">shuffle</button>
-    <br /><br />
+
+</div>    
+<div id="vote" style="display: none">
     <input id="_id" type="number" placeholder="_id"><button onclick="vote()">vote</button>
-    <br /><br />
+
+</div>    
+<div id="verify" style="display: none">
     <input id="_account" type="text" placeholder="_account"><button onclick="verify()">verify</button>
-    <br /><br />
+
+</div>    
+<div id="dispute" style="display: none">
     <input id="premeetDispute" type="checkbox"><button onclick="dispute()">dispute</button>
-    <br /><br />
+
+</div>    
+<div id="reassign" style="display: none">
     <input id="premeetReassign" type="checkbox"><button onclick="reassign()">reassign</button>
-    <br /><br />
-    <label>Transaction data:</label><input id="calldata" type="text" placeholder="0x1b7e...">
+
+</div>    
+<div id="transfer" style="display: none">
+    <input id="_to" placeholder="_to" type="text"><input id="_amount" placeholder="_amount" type="number"><select id="_token"><option value="0">Personhood</option><option value="1">Registration</option><option value="2">Immigration</option></select><button onclick="transfer()">transfer</button>
+
+</div>    
+
+<div id="transactionData" style="display: none"><label>Transaction data: </label><input id="calldata" type="text" placeholder="0x1b7e..."></div>
     
 <script>
-    
+    var active = "register"
+    function viewMethod(selectObject) {
+        document.getElementById("transactionData").style.display = "none"
+        document.getElementById(active).style.display = "none"
+        active = selectObject.value
+        document.getElementById(selectObject.value).style.display = "block"
+    }
+    function viewCalldata(size) {
+        document.getElementById("calldata").size = size
+        document.getElementById("transactionData").style.display = "block"
+    }
     function register() {
+        viewCalldata(10)
         document.getElementById("calldata").value = "0x1aa3a008"
     }
     function immigrate() {
+        viewCalldata(10)
         document.getElementById("calldata").value = "0x0ca3a075"
     }
     function shuffle() {
+        viewCalldata(10)
         document.getElementById("calldata").value = "0x2520bf04"
     }
     function vote() {
+        viewCalldata(74)
         var id = Number(document.getElementById("_id").value)
         document.getElementById("calldata").value = "0x0121b93f".concat(id.toString(16).padStart(64, 0))
     }
     function verify() {
+        viewCalldata(74)
         var account = document.getElementById("_account").value
         document.getElementById("calldata").value = "0x63a9c3d7".concat(account.padStart(64, 0))
     }
     function dispute() {
+        viewCalldata(74)
         var premeet = Number(document.getElementById("premeetDispute").checked)
         document.getElementById("calldata").value = "0x91ee7bbf".concat(String(premeet).padStart(64, 0))
     }
     function reassign() {
+        viewCalldata(74)
         var premeet = Number(document.getElementById("premeetReassign").checked)
         document.getElementById("calldata").value = "0x62fa2f1f".concat(String(premeet).padStart(64, 0))
     }
-    
+    function transfer() {
+        viewCalldata(202)
+        var _to = document.getElementById("_to").value
+        var _amount = document.getElementById("_amount").value
+        var _token = document.getElementById("_token").value
+        document.getElementById("calldata").value = "0xdbe58c1f".concat(_to.padStart(64, 0)).concat(_amount.padStart(64, 0)).concat(_token.padStart(64, 0))
+    }
 </script>
 
 </body>
