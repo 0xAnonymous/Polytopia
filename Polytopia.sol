@@ -147,11 +147,11 @@ contract Polytopia {
         Rank rank = registry[_t][msg.sender].rank;
         uint id = registry[_t][msg.sender].id;
         uint pair;
-        if(rank == Rank.Court) {
+        if(rank == Rank.Pair) pair = id/2;
+        else if(rank == Rank.Court) {
             require(isVerified(Rank.Court, id, _t));
             pair = id%(registered[_t][Rank.Pair]/2);
         }
-        else if(rank == Rank.Pair) pair = id/2;
         else return;
         require(isVerified(Rank.Pair, pair, _t));
         balanceOf[_t+period][Token.Personhood][msg.sender]++;
