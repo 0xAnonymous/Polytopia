@@ -1,1 +1,3 @@
 # Polytopia
+
+Polytopia is a new population registry paradigm, that I invented over half a decade. It is very simple. It builds on the idea of "pseudonym events", global, simultaneous verification events, an idea documented by Bryan Ford in the late 2010s. These simultaneous events confine the agency of people to a specfic point in time, and can act as proof of that a person only has one personhood within the system, instead of the cumbersome pracitice of using personal data and records to confine a person to a single personhood. Every single person participates in the verification event at the exact same time, the "proof-of-unique-human" is valid a month, and can then be thrown away, and a new one, not traceable to the previous one, acquired.
