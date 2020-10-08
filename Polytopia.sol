@@ -25,19 +25,20 @@ contract Polytopia {
         clockwork[clock_nonce] = clock_nonce;
     }
 
-    enum Rank { Court, Pair }
-    enum Status { None, Commit, Vote, Shuffle, Active, Verified }
+    enum Rank { None, Court, Pair }
+    enum Registration { None, Commit, Vote, Shuffle }
     enum Token { Personhood, Registration, Immigration }
 
     struct Reg {
         Rank rank;
         uint id;
-        Status status;
+        bool verified;
     }
     mapping (uint => mapping (address => Reg)) public registry;
     mapping (uint => mapping (Rank => mapping (uint => address))) public registryIndex;
     mapping (uint => mapping (Rank => uint)) public registered;
     mapping (uint => uint) public shuffled;
+    mapping (uint => mapping (address => Registration)) public status;
     mapping (uint => mapping (Rank => mapping (uint => bool[2]))) public judgement;
     mapping (uint => mapping (uint => bool)) public disputed;
 
@@ -71,10 +72,6 @@ contract Polytopia {
         entropy[_t] = seed[_t] = uint(registryIndex[_t][Rank.Pair][leaderboard[_t][0]]);
         scheduleHour(_t);
     }
-    function activate(uint _t, address _account) internal {
-        registry[_t][_account].status = Status.Active;
-        registry[_t][_account].rank = Rank.Pair;
-    }
     function _shuffle(uint _t) internal {
         if(shuffled[_t] == 0) initializeRandomization(_t);
         uint _shuffled = shuffled[_t];
@@ -83,15 +80,15 @@ contract Polytopia {
         (registryIndex[_t][Rank.Pair][_shuffled], registryIndex[_t][Rank.Pair][randomNumber]) = (registryIndex[_t][Rank.Pair][randomNumber], registryIndex[_t][Rank.Pair][_shuffled]); 
         address _account = registryIndex[_t][Rank.Pair][_shuffled];
         registry[_t][_account].id = _shuffled;
-        if(registry[_t][_account].status == Status.Shuffle) activate(_t, _account);
+        if(status[_t][_account] == Registration.Shuffle) registry[_t][_account].rank = Rank.Pair;
         shuffled[_t]++;
     }
     function shuffle() external {
         uint _t = schedule(); inState(randomize, premeet, _t);
         Reg storage reg = registry[_t][msg.sender];
-        require(reg.status == Status.Vote);
-        if(registryIndex[_t][Rank.Pair][reg.id] == msg.sender) activate(_t, msg.sender);
-        else reg.status = Status.Shuffle;
+        require(status[_t][msg.sender] == Registration.Vote);
+        if(registryIndex[_t][Rank.Pair][reg.id] == msg.sender) registry[_t][msg.sender].rank = Rank.Pair;
+        else status[_t][msg.sender] = Registration.Shuffle;
         _shuffle(_t);
     }
     function lateShuffle(uint _iterations) external { 
@@ -100,25 +97,25 @@ contract Polytopia {
     }
     function register() external {
         uint _t = schedule(); inState(0, rngvote, _t);
-        require(registry[_t][msg.sender].status == Status.None);
+        require(registry[_t][msg.sender].rank == Rank.None);
         require(balanceOf[_t][Token.Registration][msg.sender] >= 1);
         balanceOf[_t][Token.Registration][msg.sender]--;
         registryIndex[_t][Rank.Pair][registered[_t][Rank.Pair]] = msg.sender;
         registered[_t][Rank.Pair]++;
-        registry[_t][msg.sender].status = Status.Commit;
-        balanceOf[_t+period*2][Token.Immigration][msg.sender]++;
+        status[_t][msg.sender] = Registration.Commit;
+        balanceOf[_t+period][Token.Immigration][msg.sender]++;
     }
     function immigrate() external {
         uint _t = schedule(); inState(0, rngvote, _t);
-        require(registry[_t][msg.sender].status == Status.None);
+        require(registry[_t][msg.sender].rank == Rank.None);
         require(balanceOf[_t][Token.Immigration][msg.sender] >= 1);
         balanceOf[_t][Token.Immigration][msg.sender]--;
         uint courts = registered[_t][Rank.Court];
         registryIndex[_t][Rank.Court][courts] = msg.sender;
         registry[_t][msg.sender].id = courts;
         registered[_t][Rank.Court]++;
-        registry[_t][msg.sender].status = Status.Active;
-        balanceOf[_t][Token.Immigration][registryIndex[_t-period*2][Rank.Pair][courts%registered[_t-period*2][Rank.Pair]]]++;
+        registry[_t][msg.sender].rank = Rank.Court;
+        balanceOf[_t][Token.Immigration][registryIndex[_t-period][Rank.Pair][courts%registered[_t-period][Rank.Pair]]]++;
     }
     
     function isVerified(Rank _rank, uint _unit, uint _t) public view returns (bool) {
@@ -134,7 +131,7 @@ contract Polytopia {
     }
     function reassign(bool _premeet) external {
         uint _t = schedule(); if(_premeet != true) _t -= period;
-        require(registry[_t][msg.sender].status == Status.Active);
+        require(registry[_t][msg.sender].rank != Rank.None);
         uint countPairs = registered[_t][Rank.Pair]/2;
         uint pair = (registry[_t][msg.sender].id/(1+uint(registry[_t][msg.sender].rank)))%countPairs;
         require(disputed[_t][pair] == true);
@@ -146,7 +143,7 @@ contract Polytopia {
     }
     function completeVerification() external {
         uint _t = schedule()-period;
-        require(registry[_t][msg.sender].status == Status.Active);
+        require(registry[_t][msg.sender].verified == false);
         Rank rank = registry[_t][msg.sender].rank;
         uint id = registry[_t][msg.sender].id;
         uint pair;
@@ -158,7 +155,7 @@ contract Polytopia {
         require(isVerified(Rank.Pair, pair, _t));
         balanceOf[_t+period][Token.Personhood][msg.sender]++;
         balanceOf[_t+period][Token.Registration][msg.sender]++;
-        registry[_t][msg.sender].status = Status.Verified;
+        registry[_t][msg.sender].verified = true;
     }
     function _verify(address _account, address _signer, uint _t) internal {
         inState(hour[_t], 0, _t);
@@ -213,8 +210,8 @@ contract Polytopia {
         uint _t = schedule(); inState(rngvote, randomize, _t); 
         require(_id < registered[_t][Rank.Pair]);
 
-        require(registry[_t][msg.sender].status == Status.Commit);
-        registry[_t][msg.sender].status = Status.Vote;
+        require(status[_t][msg.sender] == Registration.Commit);
+        status[_t][msg.sender] = Registration.Vote;
 
         uint score = points[_t][_id];
 
