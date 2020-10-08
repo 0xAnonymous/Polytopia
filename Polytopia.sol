@@ -4,10 +4,10 @@ contract Polytopia {
     uint constant public genesis = 1599894000;
 
     uint constant public rngvote = 2 weeks;
-    uint constant public randomize = 19 days;
-    uint constant public premeet = 24 days;
+    uint constant public randomize = 3 weeks;
 
     function schedule() public view returns (uint) { return genesis + ((block.timestamp - genesis) / period) * period; }
+    function t(int _periods) public view returns (uint) { return schedule() + uint(_periods)*period; }
 
     mapping (uint => uint) public seed;
     mapping (uint => uint) public entropy;
@@ -25,20 +25,19 @@ contract Polytopia {
         clockwork[clock_nonce] = clock_nonce;
     }
 
-    enum Rank { None, Court, Pair }
-    enum Registration { None, Commit, Vote, Shuffle }
+    enum Rank { Court, Pair }
+    enum Status { None, Commit, Vote, Shuffle, Active, Verified }
     enum Token { Personhood, Registration, Immigration }
 
     struct Reg {
         Rank rank;
         uint id;
-        bool verified;
+        Status status;
     }
     mapping (uint => mapping (address => Reg)) public registry;
     mapping (uint => mapping (Rank => mapping (uint => address))) public registryIndex;
     mapping (uint => mapping (Rank => uint)) public registered;
     mapping (uint => uint) public shuffled;
-    mapping (uint => mapping (address => Registration)) public status;
     mapping (uint => mapping (Rank => mapping (uint => bool[2]))) public judgement;
     mapping (uint => mapping (uint => bool)) public disputed;
 
@@ -66,11 +65,17 @@ contract Polytopia {
 
     constructor() public {
         for(uint i; i<24; i++) clockwork.push(i);
-        balanceOf[schedule()][Token.Registration][msg.sender] = 2**256-1;
+        uint _t = schedule();
+        balanceOf[_t][Token.Registration][msg.sender] = 2**256-1;
+        balanceOf[_t+period][Token.Registration][msg.sender] = 2**256-1;
     }
     function initializeRandomization(uint _t) internal {
         entropy[_t] = seed[_t] = uint(registryIndex[_t][Rank.Pair][leaderboard[_t][0]]);
         scheduleHour(_t);
+    }
+    function activate(uint _t, address _account) internal {
+        registry[_t][_account].rank = Rank.Pair;
+        registry[_t][_account].status = Status.Active;
     }
     function _shuffle(uint _t) internal {
         if(shuffled[_t] == 0) initializeRandomization(_t);
@@ -80,42 +85,39 @@ contract Polytopia {
         (registryIndex[_t][Rank.Pair][_shuffled], registryIndex[_t][Rank.Pair][randomNumber]) = (registryIndex[_t][Rank.Pair][randomNumber], registryIndex[_t][Rank.Pair][_shuffled]); 
         address _account = registryIndex[_t][Rank.Pair][_shuffled];
         registry[_t][_account].id = _shuffled;
-        if(status[_t][_account] == Registration.Shuffle) registry[_t][_account].rank = Rank.Pair;
+        if(registry[_t][_account].status == Status.Shuffle) activate(_t, _account);
         shuffled[_t]++;
     }
     function shuffle() external {
-        uint _t = schedule(); inState(randomize, premeet, _t);
-        Reg storage reg = registry[_t][msg.sender];
-        require(status[_t][msg.sender] == Registration.Vote);
-        if(registryIndex[_t][Rank.Pair][reg.id] == msg.sender) registry[_t][msg.sender].rank = Rank.Pair;
-        else status[_t][msg.sender] = Registration.Shuffle;
+        uint _t = schedule(); inState(randomize, 0, _t);
+        require(registry[_t][msg.sender].status == Status.Vote);
+        if(registryIndex[_t][Rank.Pair][registry[_t][msg.sender].id] == msg.sender) activate(_t, msg.sender);
+        else registry[_t][msg.sender].status = Status.Shuffle;
         _shuffle(_t);
     }
-    function lateShuffle(uint _iterations) external { 
-        uint _t = schedule(); inState(premeet, 0, _t);
-        for (uint i = 0; i < _iterations; i++) _shuffle(_t); 
-    }
+    function lateShuffle(uint _iterations) external { for (uint i = 0; i < _iterations; i++) _shuffle(t(-1)); }
+
     function register() external {
         uint _t = schedule(); inState(0, rngvote, _t);
-        require(registry[_t][msg.sender].rank == Rank.None);
+        require(registry[_t][msg.sender].status == Status.None);
         require(balanceOf[_t][Token.Registration][msg.sender] >= 1);
         balanceOf[_t][Token.Registration][msg.sender]--;
         registryIndex[_t][Rank.Pair][registered[_t][Rank.Pair]] = msg.sender;
         registered[_t][Rank.Pair]++;
-        status[_t][msg.sender] = Registration.Commit;
-        balanceOf[_t+period][Token.Immigration][msg.sender]++;
+        registry[_t][msg.sender].status = Status.Commit;
+        balanceOf[_t+period*2][Token.Immigration][msg.sender]++;
     }
     function immigrate() external {
         uint _t = schedule(); inState(0, rngvote, _t);
-        require(registry[_t][msg.sender].rank == Rank.None);
+        require(registry[_t][msg.sender].status == Status.None);
         require(balanceOf[_t][Token.Immigration][msg.sender] >= 1);
         balanceOf[_t][Token.Immigration][msg.sender]--;
         uint courts = registered[_t][Rank.Court];
         registryIndex[_t][Rank.Court][courts] = msg.sender;
         registry[_t][msg.sender].id = courts;
         registered[_t][Rank.Court]++;
-        registry[_t][msg.sender].rank = Rank.Court;
-        balanceOf[_t][Token.Immigration][registryIndex[_t-period][Rank.Pair][courts%registered[_t-period][Rank.Pair]]]++;
+        registry[_t][msg.sender].status = Status.Active;
+        balanceOf[_t][Token.Immigration][registryIndex[_t-period*2][Rank.Pair][courts%registered[_t-period][Rank.Pair]]]++;
     }
     
     function isVerified(Rank _rank, uint _unit, uint _t) public view returns (bool) {
@@ -123,15 +125,15 @@ contract Polytopia {
     }
 
     function dispute(bool _premeet) external {
-        uint _t = schedule(); if(_premeet != true) _t -= period;
+        uint _t; if(_premeet == true) _t = t(-1); else _t = t(-2);
         require(registry[_t][msg.sender].rank == Rank.Pair);
         uint pair = registry[_t][msg.sender].id/2;
         if(_premeet == false) require(!isVerified(Rank.Pair, pair, _t));
         disputed[_t][pair] = true; 
     }
     function reassign(bool _premeet) external {
-        uint _t = schedule(); if(_premeet != true) _t -= period;
-        require(registry[_t][msg.sender].rank != Rank.None);
+        uint _t; if(_premeet == true) _t = t(-1); else _t = t(-2);
+        require(registry[_t][msg.sender].status == Status.Active);
         uint countPairs = registered[_t][Rank.Pair]/2;
         uint pair = (registry[_t][msg.sender].id/(1+uint(registry[_t][msg.sender].rank)))%countPairs;
         require(disputed[_t][pair] == true);
@@ -142,8 +144,8 @@ contract Polytopia {
         registry[_t][msg.sender].rank = Rank.Court;
     }
     function completeVerification() external {
-        uint _t = schedule()-period;
-        require(registry[_t][msg.sender].verified == false);
+        uint _t = t(-2);
+        require(registry[_t][msg.sender].status == Status.Active);
         Rank rank = registry[_t][msg.sender].rank;
         uint id = registry[_t][msg.sender].id;
         uint pair;
@@ -154,9 +156,9 @@ contract Polytopia {
         }
         else return;
         require(isVerified(Rank.Pair, pair, _t));
-        balanceOf[_t+period][Token.Personhood][msg.sender]++;
-        balanceOf[_t+period][Token.Registration][msg.sender]++;
-        registry[_t][msg.sender].verified = true;
+        balanceOf[_t+period*2][Token.Personhood][msg.sender]++;
+        balanceOf[_t+period*2][Token.Registration][msg.sender]++;
+        registry[_t][msg.sender].status = Status.Verified;
     }
     function _verify(address _account, address _signer, uint _t) internal {
         inState(hour[_t], 0, _t);
@@ -170,15 +172,15 @@ contract Polytopia {
         require(pair == peer/2);
         judgement[_t][rank][unit][peer%2] = true;        
     }
-    function verify(address _account) external { _verify(_account, msg.sender, schedule()-period); }
+    function verify(address _account) external { _verify(_account, msg.sender, t(-2)); }
 
     function msgHash(uint _t) internal view returns (bytes32) { return keccak256(abi.encodePacked(msg.sender, _t+period*2)); }
 
     function uploadSignature(bytes32 r, bytes32 s, uint8 v) external {
-        uint _t = schedule()-period; _verify(msg.sender, ecrecover(msgHash(_t), v, r, s), _t);
+        uint _t = t(-2); _verify(msg.sender, ecrecover(msgHash(_t), v, r, s), _t);
     }
     function courtSignature(bytes32[2] calldata r, bytes32[2] calldata s, uint8[2] calldata v) external {
-        uint _t = schedule()-period; bytes32 _msgHash = msgHash(_t);
+        uint _t = t(-2); bytes32 _msgHash = msgHash(_t);
         _verify(msg.sender, ecrecover(_msgHash, v[0], r[0], s[0]), _t);
         _verify(msg.sender, ecrecover(_msgHash, v[1], r[1], s[1]), _t);
     }
@@ -211,8 +213,8 @@ contract Polytopia {
         uint _t = schedule(); inState(rngvote, randomize, _t); 
         require(_id < registered[_t][Rank.Pair]);
 
-        require(status[_t][msg.sender] == Registration.Commit);
-        status[_t][msg.sender] = Registration.Vote;
+        require(registry[_t][msg.sender].status == Status.Commit);
+        registry[_t][msg.sender].status = Status.Vote;
 
         uint score = points[_t][_id];
 
