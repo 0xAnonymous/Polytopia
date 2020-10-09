@@ -12,7 +12,7 @@
   <h1>Polytopia transaction generator and signer</h1>
 
 <select onchange="viewMethod(this)">
-    <option disabled selected>-- select a function --</option>
+    <option disabled selected value>-- select a function --</option>
     <option value="register">register</option>
     <option value="immigrate">immigrate</option>    
     <option value="shuffle">shuffle</option>    
@@ -66,7 +66,12 @@
         <label>Signature: </label><input id="signature" type="text" readonly><br />
         <button onclick="broadcast()">Broadcast</button>
     </div>
-    <div id="response" style="display:none"></div>
+    <div id="response" style="display:none">
+        <div id="result">
+        </div>
+        <div id="link">
+        </div>
+    </div>
 </template>      
 
 <div id="transaction"></div>
@@ -189,7 +194,9 @@
                 let result
                 if(data.result) result = "Success! "
                 else result = "Error! "
-                document.getElementById("response").innerHTML = result+JSON.stringify(data)
+                document.getElementById("response").style.display = "block"
+                document.getElementById("result").innerHTML = result+JSON.stringify(data)
+                if(data.result) document.getElementById("link").innerHTML = "Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+data.result+"'>"+data.result+"</a>"
         })
     }
     function vote() {
