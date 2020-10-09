@@ -171,7 +171,7 @@
             gasLimit: intToHex(document.getElementById("gas").value),
             to:       Polytopia, 
             value:    '0x00',
-            data:     '0xc5fc7911'
+            data:     document.getElementById("calldata").value
         }
         let tx = new ethereumjs.Tx(txParams)
         tx.sign(privateKey)
