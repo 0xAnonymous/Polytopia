@@ -191,7 +191,7 @@
                 if(data.result) result = "Success! "
                 else result = "Error! "
                 document.getElementById("result").innerHTML = result+JSON.stringify(data)
-                if(data.result) document.getElementById("link").innerHTML = "Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+ data.result+"'>"+data.result+"</a>"
+                if(data.result) document.getElementById("link").innerHTML = "Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+data.result+"'>"+data.result+"</a>"
         })
     }
     function register() {
