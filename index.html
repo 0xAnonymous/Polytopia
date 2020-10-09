@@ -12,6 +12,7 @@
   <h1>Polytopia transaction generator and signer</h1>
 
 <select onchange="viewMethod(this)">
+    <option disabled selected>-- select a function --</option>
     <option value="register">register</option>
     <option value="immigrate">immigrate</option>    
     <option value="shuffle">shuffle</option>    
@@ -96,12 +97,7 @@
             "gas": 78773
         }
     }
-    
-    function initiate() {
-        transactionData(methods["register"].methodIdentifier, methods["register"].gas)
-    }
-    initiate()
-    
+        
     function resetMethod() { 
         if(document.getElementById("argumentsLoaded")) document.getElementById('argumentsLoaded').remove();
     }
