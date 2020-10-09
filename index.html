@@ -158,11 +158,7 @@
         if (key[0] == '0' && key[1] == 'x') return key.substring(2);
         return key;
     }
-    function resetSignature() {
-        document.getElementById("signed").style.display = "none"
-    }
     function sign() {
-        resetSignature()
         let privateKey = new ethereumjs.Buffer.Buffer(remove0x(document.getElementById("key").value), 'hex')
         let txParams = {
             nonce:    intToHex(document.getElementById("nonce").value),
