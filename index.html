@@ -75,9 +75,10 @@
     </div>
     <div id="signed" style="display: none">
         <label>Address: </label><input id="address" type="text" size="42"><br />
-        <label>Signature: </label><input id="signature" type="text">
+        <label>Signature: </label><input id="signature" type="text"><br />
+        <button onclick="broadcast()">Broadcast</button>
     </div>
-
+    <div id="response" style="display:none"></div>
 </template>      
 
 <div id="transaction"></div>
@@ -181,6 +182,15 @@
         document.getElementById("signature").value = serializedTx
         document.getElementById("signature").size = serializedTx.length
         document.getElementById("address").value = "0x".concat(tx.from.toString('hex'))
+    }
+    function broadcast() {
+        var url = 'https://api-ropsten.etherscan.io/api?module=proxy&action=eth_sendRawTransaction&hex='+document.getElementById("signature").value
+        fetch(url)+'&apikey=37CMMDF13S2TYE3FRR4Y4X17F2ARPKQG7H'
+            .then((resp) => resp.json())
+            .then(function(data) {
+                document.getElementById("response").style.display = "block"
+                document.getElementById("response").innerHTML = JSON.stringify(data)
+        })
     }
     function register() {
         transactionData("0x1aa3a008", 115469)
