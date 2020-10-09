@@ -61,17 +61,17 @@
     <div>
         <label>Transaction data: </label><input id="calldata" type="text" placeholder="0x1b7e...">
     </div>
-    <div>
+    <div id="privatekey">
+        <label>Private key: </label><input id="key" type="text" size="66"><button onclick="load()">Load</button>
+    </div>    
+    <div id="parameters" style="display: none">
         <label>Nonce: </label><input id="nonce" type="number" placeholder="0" oninput="inputNonce()">
-    </div>
-    <div id="gasinput" style="display: none">
+        <br />
         <label>Gas: </label><input id="gas" type="number" placeholder="21000" oninput="inputGas()">
-    </div>
-    <div id="gaspriceinput" style="display: none">
+        <br />
         <label>Gas price: </label><input id="gasprice" type="number" value="5" oninput="inputGasPrice()">
-    </div>
-    <div id="privatekey" style="display:none">
-        <label>Private key: </label><input id="key" type="text" size="66"><button onclick="sign()">Sign </button>
+        <br />
+        <button onclick="sign()">Sign</button>
     </div>
     <div id="signed" style="display: none">
         <label>Address: </label><input id="address" type="text" size="42"><br />
@@ -137,21 +137,37 @@
         document.getElementById("calldata").size = data.length
         document.getElementById("gas").value = gas
         transaction.gas = gas
+        transaction.gasPrice = document.getElementById("gasprice").value*10**9
     }
     function inputNonce() {
         transaction.nonce = document.getElementById("nonce").value
-        document.getElementById("gasinput").style.display = "block"
-        document.getElementById("gaspriceinput").style.display = "block"
-        document.getElementById("privatekey").style.display = "block"
-        inputGas()
-        inputGasPrice()
     }
     function inputGas() {
         transaction.gas = document.getElementById("gas").value
     }
     function inputGasPrice() {
         transaction.gasPrice = document.getElementById("gasprice").value*10**9
+    } 
+    function getNonce(publicKey) {
+        var url = 'https://api-ropsten.etherscan.io/api?module=proxy&action=eth_getTransactionCount&address=0x'+publicKey+'&tag=latest&apikey=37CMMDF13S2TYE3FRR4Y4X17F2ARPKQG7H'
+        fetch(url)
+            .then((resp) => resp.json())
+            .then(function(data) {
+                let nonce = parseInt(data.result, 16)
+                transaction.nonce = nonce
+                document.getElementById("nonce").value = nonce
+        })
     }
+    function add0x(key) {
+        if (key[0] != '0' && key[1] != 'x') return '0x'.concat(key);
+        return key;
+    }
+    function load() {
+        let privateKey = add0x(document.getElementById("key").value)
+        let publicKey = ethereumjs.Util.privateToAddress(privateKey).toString('hex')
+        getNonce(publicKey)
+        document.getElementById("parameters").style.display = "block"
+    }    
     function intToHex(int) {
         var str = Number(int).toString(16)
         if(str.length%2 == 1) str = '0' + str
@@ -183,9 +199,10 @@
         document.getElementById("signature").size = serializedTx.length
         document.getElementById("address").value = "0x".concat(tx.from.toString('hex'))
     }
+
     function broadcast() {
-        var url = 'https://api-ropsten.etherscan.io/api?module=proxy&action=eth_sendRawTransaction&hex='+document.getElementById("signature").value
-        fetch(url)+'&apikey=37CMMDF13S2TYE3FRR4Y4X17F2ARPKQG7H'
+        var url = 'https://api-ropsten.etherscan.io/api?module=proxy&action=eth_sendRawTransaction&hex='+document.getElementById("signature").value+'&apikey=37CMMDF13S2TYE3FRR4Y4X17F2ARPKQG7H'
+        fetch(url)
             .then((resp) => resp.json())
             .then(function(data) {
                 document.getElementById("response").style.display = "block"
