@@ -24,37 +24,22 @@
     <option value="transfer">transfer</option>    
 </select>    
     
-<div id="method"></div>    
- 
-<template id="register">
-    <button onclick="register()">register</button>
-</template>    
-<template id="immigrate">
-    <button onclick="immigrate()">immigrate</button>
-</template>    
-<template id="shuffle">
-    <button onclick="shuffle()">shuffle</button>
-</template>    
+<div id="arguments"></div>
+
 <template id="vote">
-    <input id="_id" type="number" placeholder="_id"><button onclick="vote()">vote</button>
+    <input id="_id" type="number" placeholder="_id"><button onclick="vote()">Callcode</button>
 </template>
 <template id="verify">
-    <input id="_account" type="text" placeholder="_account"><button onclick="verify()">verify</button>
-</template>
-<template id="completeVerification">
-    <button onclick="completeVerification()">completeVerification</button>
-</template>
-<template id="claimPersonhood">
-    <button onclick="claimPersonhood()">claimPersonhood</button>
-</template>
+    <input id="_account" type="text" placeholder="_account"><button onclick="verify()">Callcode</button>
+</template>    
 <template id="dispute">
-    <label>Premeet: </label><input id="premeetDispute" type="checkbox"><button onclick="dispute()">dispute</button>
+    <label>Premeet: </label><input id="premeetDispute" type="checkbox"><button onclick="dispute()">Callcode</button>
 </template>    
 <template id="reassign">
-    <label>Premeet: </label><input id="premeetReassign" type="checkbox"><button onclick="reassign()">reassign</button>
+    <label>Premeet: </label><input id="premeetReassign" type="checkbox"><button onclick="reassign()">Callcode</button>
 </template>    
 <template id="transfer">
-    <input id="_to" placeholder="_to" type="text"><input id="_amount" placeholder="_amount" type="number"><select id="_token"><option value="0">Personhood</option><option value="1">Registration</option><option value="2">Immigration</option></select><button onclick="transfer()">transfer</button>
+    <input id="_to" placeholder="_to" type="text"><input id="_amount" placeholder="_amount" type="number"><select id="_token"><option value="0">Personhood</option><option value="1">Registration</option><option value="2">Immigration</option></select><button onclick="transfer()">Callcode</button>
 </template>
 
 <template id="transactionGenerator">
@@ -80,12 +65,7 @@
         <label>Signature: </label><input id="signature" type="text" readonly><br />
         <button onclick="broadcast()">Broadcast</button>
     </div>
-    <div id="response" style="display:none">
-        <div id="result">
-        </div>
-        <div id="link">
-        </div>
-    </div>
+    <div id="response" style="display:none"></div>
 </template>      
 
 <div id="transaction"></div>
@@ -94,20 +74,51 @@
     
     var Polytopia = "0x901e01e2d433ab5384a9bbc1c97714c35077d86e"
 
+    var methods = {
+        "register": {
+            "methodIdentifier": "0x1aa3a008", 
+            "gas": 115469
+        },
+        "immigrate": {
+            "methodIdentifier": "0x0ca3a075", 
+            "gas": 103617
+        },
+        "shuffle": {
+            "methodIdentifier": "0x2520bf04", 
+            "gas": 163340
+        },
+        "completeVerification": {
+            "methodIdentifier": "0xa128644d", 
+            "gas": 49285
+        },
+        "claimPersonhood": {
+            "methodIdentifier": "0xd5dffb27", 
+            "gas": 78773
+        }
+    }
+    
     function initiate() {
-        loadMethod("register")
+        transactionData(methods["register"].methodIdentifier, methods["register"].gas)
     }
     initiate()
     
-    function resetMethod() { document.getElementById('methodLoaded').remove(); }
-    function loadMethod(_method) {
+    function resetMethod() { 
+        if(document.getElementById("argumentsLoaded")) document.getElementById('argumentsLoaded').remove();
+    }
+    function loadArguments(_method) {
         var div = document.createElement("div");
-        div.id = "methodLoaded";
-        document.getElementById("method").appendChild(div);
+        div.id = "argumentsLoaded";
+        document.getElementById("arguments").appendChild(div);
         var method = document.getElementById(_method);
         var clone = method.content.cloneNode(true)
-        document.querySelector('#methodLoaded').appendChild(clone);
+        document.getElementById('argumentsLoaded').appendChild(clone);
     }
+    function viewMethod(selectObject) {
+        resetTransaction()
+        resetMethod()
+        if(methods[selectObject.value]) transactionData(methods[selectObject.value].methodIdentifier, methods[selectObject.value].gas)
+        else loadArguments(selectObject.value)
+    }    
     function resetTransaction() {
         if(document.getElementById("transactionLoaded")) document.getElementById('transactionLoaded').remove();
     }
@@ -119,17 +130,9 @@
         var clone = template.content.cloneNode(true)
         document.querySelector('#transactionLoaded').appendChild(clone);
     }
-    function generateTransaction() {
+    function transactionData(data, gas) {
         resetTransaction()
         loadTransaction()
-    }
-    function viewMethod(selectObject) {
-        resetTransaction()
-        resetMethod()
-        loadMethod(selectObject.value)
-    }
-    function transactionData(data, gas) {
-        generateTransaction()
         document.getElementById("calldata").value = data
         document.getElementById("calldata").size = data.length
         document.getElementById("gas").value = gas
@@ -190,18 +193,8 @@
                 let result
                 if(data.result) result = "Success! "
                 else result = "Error! "
-                document.getElementById("result").innerHTML = result+JSON.stringify(data)
-                if(data.result) document.getElementById("link").innerHTML = "Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+data.result+"'>"+data.result+"</a>"
+                document.getElementById("response").innerHTML = result+JSON.stringify(data)
         })
-    }
-    function register() {
-        transactionData("0x1aa3a008", 115469)
-    }
-    function immigrate() {
-        transactionData("0x0ca3a075", 103617)
-    }
-    function shuffle() {
-        transactionData("0x2520bf04", 163340)
     }
     function vote() {
         var id = Number(document.getElementById("_id").value)
@@ -213,12 +206,6 @@
         var data = "0x63a9c3d7".concat(account.padStart(64, 0))
         transactionData(data, 51674)
     }
-    function completeVerification() {
-        transactionData("0xa128644d", 49285)        
-    }
-    function claimPersonhood() {
-        transactionData("0xd5dffb27", 78773)        
-    }    
     function dispute() {
         var premeet = Number(document.getElementById("premeetDispute").checked)
         var data = "0x91ee7bbf".concat(String(premeet).padStart(64, 0))
