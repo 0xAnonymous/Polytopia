@@ -197,7 +197,7 @@
         transactionData(data, 68888)
     }
     function verify() {
-        var account = document.getElementById("_account").value
+        var account = remove0x(document.getElementById("_account").value)
         var data = "0x63a9c3d7".concat(account.padStart(64, 0))
         transactionData(data, 51674)
     }
@@ -218,7 +218,7 @@
         transactionData(data, 24759)
     }
     function transfer() {
-        var _to = document.getElementById("_to").value
+        var _to = remove0x(document.getElementById("_to").value)
         var _amount = document.getElementById("_amount").value
         var _token = document.getElementById("_token").value
         var data = "0xdbe58c1f".concat(_to.padStart(64, 0)).concat(_amount.padStart(64, 0)).concat(_token.padStart(64, 0))
