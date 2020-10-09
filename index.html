@@ -59,7 +59,7 @@
 
 <template id="transactionGenerator">
     <div>
-        <label>Transaction data: </label><input id="calldata" type="text" placeholder="0x1b7e...">
+        <label>Transaction data: </label><input id="calldata" type="text" placeholder="0x1b7e..." readonly>
     </div>
     <div id="privatekey">
         <label>Private key: </label><input id="key" type="text" size="66"><button onclick="load()">Load</button>
@@ -74,8 +74,8 @@
         <button onclick="sign()">Sign</button>
     </div>
     <div id="signed" style="display: none">
-        <label>Address: </label><input id="address" type="text" size="42"><br />
-        <label>Signature: </label><input id="signature" type="text"><br />
+        <label>Address: </label><input id="address" type="text" size="42" readonly><br />
+        <label>Signature: </label><input id="signature" type="text" readonly><br />
         <button onclick="broadcast()">Broadcast</button>
     </div>
     <div id="response" style="display:none"></div>
