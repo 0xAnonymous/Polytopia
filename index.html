@@ -64,17 +64,19 @@
     <div id="privatekey">
         <label>Private key: </label><input id="key" type="text" size="66"><button onclick="load()">Load</button>
     </div>    
+    <div id="publickey" style="display: none">
+    <label>Address: </label><input id="address" type="text" size="42" readonly><br />
+    </div>
     <div id="parameters" style="display: none">
-        <label>Nonce: </label><input id="nonce" type="number" placeholder="0" oninput="inputNonce()">
+        <label>Nonce: </label><input id="nonce" type="number" placeholder="0">
         <br />
-        <label>Gas: </label><input id="gas" type="number" placeholder="21000" oninput="inputGas()">
+        <label>Gas: </label><input id="gas" type="number">
         <br />
-        <label>Gas price: </label><input id="gasprice" type="number" value="5" oninput="inputGasPrice()">
+        <label>Gas price: </label><input id="gasprice" type="number" value="5">
         <br />
         <button onclick="sign()">Sign</button>
     </div>
     <div id="signed" style="display: none">
-        <label>Address: </label><input id="address" type="text" size="42" readonly><br />
         <label>Signature: </label><input id="signature" type="text" readonly><br />
         <button onclick="broadcast()">Broadcast</button>
     </div>
@@ -86,16 +88,7 @@
 <script>
     
     var Polytopia = "0x901e01e2d433ab5384a9bbc1c97714c35077d86e"
-    
-    var transaction = {
-            "nonce": "",
-            "gasPrice": "",
-            "gas": "",
-            "to": Polytopia,
-            "value": "0",
-            "data": ""
-        }
-    
+
     function initiate() {
         loadMethod("register")
     }
@@ -133,29 +126,15 @@
     function transactionData(data, gas) {
         generateTransaction()
         document.getElementById("calldata").value = data
-        transaction.data = data
         document.getElementById("calldata").size = data.length
         document.getElementById("gas").value = gas
-        transaction.gas = gas
-        transaction.gasPrice = document.getElementById("gasprice").value*10**9
     }
-    function inputNonce() {
-        transaction.nonce = document.getElementById("nonce").value
-    }
-    function inputGas() {
-        transaction.gas = document.getElementById("gas").value
-    }
-    function inputGasPrice() {
-        transaction.gasPrice = document.getElementById("gasprice").value*10**9
-    } 
     function getNonce(publicKey) {
         var url = 'https://api-ropsten.etherscan.io/api?module=proxy&action=eth_getTransactionCount&address=0x'+publicKey+'&tag=latest&apikey=37CMMDF13S2TYE3FRR4Y4X17F2ARPKQG7H'
         fetch(url)
             .then((resp) => resp.json())
             .then(function(data) {
-                let nonce = parseInt(data.result, 16)
-                transaction.nonce = nonce
-                document.getElementById("nonce").value = nonce
+                document.getElementById("nonce").value = parseInt(data.result, 16)
         })
     }
     function add0x(key) {
@@ -165,6 +144,8 @@
     function load() {
         let privateKey = add0x(document.getElementById("key").value)
         let publicKey = ethereumjs.Util.privateToAddress(privateKey).toString('hex')
+        document.getElementById("publickey").style.display = "block"
+        document.getElementById("address").value = "0x".concat(publicKey)
         getNonce(publicKey)
         document.getElementById("parameters").style.display = "block"
     }    
@@ -184,12 +165,12 @@
         resetSignature()
         let privateKey = new ethereumjs.Buffer.Buffer(remove0x(document.getElementById("key").value), 'hex')
         let txParams = {
-            nonce:    intToHex(transaction.nonce),
-            gasPrice: intToHex(transaction.gasPrice), 
-            gasLimit: intToHex(transaction.gas),
-            to:       transaction.to, 
+            nonce:    intToHex(document.getElementById("nonce").value),
+            gasPrice: intToHex(document.getElementById("gasprice").value*10**9), 
+            gasLimit: intToHex(document.getElementById("gas").value),
+            to:       Polytopia, 
             value:    '0x00',
-            data:     transaction.data
+            data:     document.getElementById("calldata").value
         }
         let tx = new ethereumjs.Tx(txParams)
         tx.sign(privateKey)
@@ -197,7 +178,6 @@
         document.getElementById("signed").style.display = "block"
         document.getElementById("signature").value = serializedTx
         document.getElementById("signature").size = serializedTx.length
-        document.getElementById("address").value = "0x".concat(tx.from.toString('hex'))
     }
 
     function broadcast() {
