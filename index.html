@@ -194,7 +194,6 @@
                 let result
                 if(data.result) result = "Success! "
                 else result = "Error! "
-                document.getElementById("response").style.display = "block"
                 document.getElementById("result").innerHTML = result+JSON.stringify(data)
                 if(data.result) document.getElementById("link").innerHTML = "Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+data.result+"'>"+data.result+"</a>"
         })
