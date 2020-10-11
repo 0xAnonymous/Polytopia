@@ -15,7 +15,7 @@
 <template id="accountTemplate">
     <div id="account">
         <div id="privatekey" style="display: block">
-            <label>Private key: </label><input id="pkey" type="text" size="66"><button onclick="logIn()">Load</button>
+            <nobr><label>Private key: </label><input id="pkey" type="text" size="66"><button onclick="logIn()">Load</button></nobr>
         </div>
         <div id="publickey" style="visibility: hidden">
             <nobr><label>Logged in: </label><span id="address"></span><span> <a href="javascript:logOut();">(Change account)</a></span></nobr><br />
