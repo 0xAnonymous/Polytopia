@@ -17,7 +17,7 @@
         <div id="privatekey" style="display: block">
             <label>Private key: </label><input id="pkey" type="text" size="66"><button onclick="logIn()">Load</button>
         </div>
-        <div id="publickey" style="display: none">
+        <div id="publickey" style="visibility: hidden">
             <label>Logged in: </label><span id="address"></span><span> <a href="javascript:logOut();">(Change account)</a></span><br />
             <label>Balance: </label><span id="balance" style="color: red"></span>
             <br /><br />
@@ -86,8 +86,8 @@
     }
     function initiate() {
         loadContainer()
-        loadAccount()        
-        document.body.style.width = document.getElementById("privatekey").clientWidth*1.5
+        loadAccount()
+        document.body.style.width = document.getElementById("publickey").clientWidth*1.1
     }
     initiate()
     
@@ -114,7 +114,7 @@
         
         document.getElementById("address").textContent = publicKey
         document.getElementById('privatekey').style.display = "none"
-        document.getElementById('publickey').style.display = "block"
+        document.getElementById('publickey').style.visibility = "visible"
         document.getElementById('selector').style.display = "block"
     }
     function loadMethod(selectObject) {
