@@ -62,7 +62,7 @@
 </template>    
 <template id="sendTransactionTemplate">
     <button onclick="sign()">Send transaction</button>    
-
+    <br /><br />
     <div id="response">
         <div id="result">
         </div>
@@ -179,10 +179,9 @@
                 .then((resp) => resp.json())
                 .then(function(data) {
                     let result
-                    if(data.result) result = "Success! "
-                    else result = "Error! "
-                    document.getElementById("result").innerHTML = result+JSON.stringify(data)
-                    if(data.result) document.getElementById("link").innerHTML = "Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+data.result+"'>"+data.result+"</a>"
+                    if(data.result) result = "Success! Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+data.result+"'>"+data.result+"</a>"
+                    else result = "Error! "+JSON.stringify(data)
+                    document.getElementById("result").innerHTML = result
                 })   
             })
         })     
