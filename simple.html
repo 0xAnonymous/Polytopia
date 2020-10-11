@@ -105,12 +105,12 @@
         let publicKey = "0x".concat(ethereumjs.Util.privateToAddress(privateKey).toString('hex'))       
         var getBalance = "https://api-ropsten.etherscan.io/api?module=account&action=balance&address="+publicKey+"&tag=latest&apikey=37CMMDF13S2TYE3FRR4Y4X17F2ARPKQG7H"
 
-        //fetch(getBalance)
-        //    .then((resp) => resp.json())
-        //    .then(function(data) {
-        //        let balance = data.result/10**18
-        //        document.getElementById("balance").innerHTML = " "+balance.toFixed(5).replace(/\.?0+$/, '')+" ROP"
-        //})                
+        fetch(getBalance)
+            .then((resp) => resp.json())
+            .then(function(data) {
+                let balance = data.result/10**18
+                document.getElementById("balance").textContent = " "+balance.toFixed(5).replace(/\.?0+$/, '')+" ROP"
+        })                
         
         document.getElementById("address").textContent = publicKey
         document.getElementById('privatekey').style.display = "none"
