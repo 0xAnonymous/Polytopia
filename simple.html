@@ -1,0 +1,94 @@
+<html>
+<head>
+    <title>Polytopia</title>
+<!--
+<script src="https://github.com/ethereumjs/browser-builds/blob/master/dist/ethereumjs-tx/ethereumjs-tx-1.3.3.min.js"></script>
+-->
+<script src="https://cdn.jsdelivr.net/gh/ethereumjs/browser-builds/dist/ethereumjs-tx/ethereumjs-tx-1.3.3.min.js"></script>
+
+</head>
+    
+<body id="body" style="width:fit-content; height: 100px; margin-left: auto; margin-right: auto; margin-top: 35vh;">
+
+<div id="container"></div>
+
+<template id="accountTemplate">
+    <div id="account">
+        <div id="privatekey" style="display: block">
+            <label>Private key: </label><input id="pkey" type="text" size="66"><button onclick="logIn()">Load</button>
+        </div>
+        <div id="publickey" style="display: none">
+            <label>Logged in: </label><span id="address"></span><span> <a href="javascript:logOut();">(Change account)</a></span><br />
+            <label>Balance: </label><span id="balance" style="color: red"></span>
+            <br /><br />
+        </div>
+        <div id="selector" style="display: none">
+            <select onchange="viewMethod(this)">
+                <option disabled selected value>-- select a function --</option>
+                <option value="register">register</option>
+                <option value="immigrate">immigrate</option>    
+                <option value="shuffle">shuffle</option>    
+                <option value="vote">vote</option>    
+                <option value="verify">verify</option>
+                <option value="completeVerification">completeVerification</option>
+                <option value="claimPersonhood">claimPersonhood</option>    
+                <option value="dispute">dispute</option>    
+                <option value="reassign">ressign</option>    
+                <option value="transfer">transfer</option>    
+            </select>    
+        </div>
+    </div>
+</template>
+    
+<div id="method"></div>
+<div id="submit"></div>
+
+<script>
+    
+    function loadContainer() {
+        var div = document.createElement("div");
+        div.id = "containerLoaded";
+        document.getElementById("container").appendChild(div);
+    }
+    function loadAccount() {
+        var account = document.getElementById('accountTemplate');
+        var clone = account.content.cloneNode(true)
+        document.getElementById('containerLoaded').appendChild(clone);
+    }
+    loadContainer()
+    loadAccount()
+    function initiate() {
+        document.body.style.width = document.getElementById("privatekey").clientWidth
+    }
+    initiate()
+    
+    function logOut() {
+        document.getElementById('containerLoaded').remove();
+        loadContainer()
+        loadAccount()
+    }
+    function add0x(key) {
+        if (key[0] != '0' && key[1] != 'x') return '0x'.concat(key);
+        return key;
+    }
+    function logIn() {
+        let privateKey = add0x(document.getElementById("pkey").value)
+        let publicKey = "0x".concat(ethereumjs.Util.privateToAddress(privateKey).toString('hex'))       
+        var getBalance = "https://api-ropsten.etherscan.io/api?module=account&action=balance&address="+publicKey+"&tag=latest&apikey=37CMMDF13S2TYE3FRR4Y4X17F2ARPKQG7H"
+
+        //fetch(getBalance)
+        //    .then((resp) => resp.json())
+        //    .then(function(data) {
+        //        let balance = data.result/10**18
+        //        document.getElementById("balance").innerHTML = " "+balance.toFixed(5).replace(/\.?0+$/, '')+" ROP"
+        //})                
+        
+        document.getElementById("address").textContent = publicKey
+        document.getElementById('privatekey').style.display = "none"
+        document.getElementById('publickey').style.display = "block"
+        document.getElementById('selector').style.display = "block"
+    }
+</script>
+    
+</body>
+</html>
