@@ -66,7 +66,7 @@
     <div id="response">
         <div id="result">
         </div>
-        <div id="link">
+        <div id="error">
         </div>
     </div>    
 </template>
@@ -180,8 +180,12 @@
                 .then(function(data) {
                     let result
                     if(data.result) result = "Success! Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+data.result+"'>"+data.result+"</a>"
-                    else result = "Error! "+JSON.stringify(data)
-                    document.getElementById("result").innerHTML = result
+                    else { 
+                        result = "Error! "
+                        document.getElementById("error").textContent = JSON.stringify(data)
+                    }
+                    document.getElementById("result").textContent = result
+                    
                 })   
             })
         })     
