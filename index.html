@@ -9,9 +9,13 @@
     
 </head>
     
-<body id="body" style="width:fit-content; margin-left: auto; margin-right: auto; margin-top: 35vh;">
+<body>
 
-<div id="container"></div>
+<div style="position: fixed; top: 0; width: 100%;">
+    <a href="https://github.com/0xAnonymous/Polytopia/blob/main/index.html"><img src="./github.png" style="margin:10px; position: fixed; right: 0"></a>
+</div>         
+
+<div id="container" style="width:fit-content; margin-left: auto; margin-right: auto; margin-top: 35vh;"></div>
 
 <template id="accountTemplate">
     <div id="account">
@@ -72,7 +76,7 @@
     </div>    
 </template>
     
-<div style="position: fixed; left: 0; bottom: 0; width: 100%; text-align: center;">
+<div style="position: fixed; left: 0; bottom: 0; width: 100%; text-align: center; font-size: small">
     <p>Powered by Etherscan.io APIs</p>
 </div>         
 <script>
@@ -92,7 +96,7 @@
     function initiate() {
         loadContainer()
         loadAccount()
-        document.body.style.width = document.getElementById("privatekey").clientWidth
+        document.getElementById("container").style.width = document.getElementById("privatekey").clientWidth
     }
     initiate()
     
