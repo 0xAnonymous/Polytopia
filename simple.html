@@ -179,13 +179,11 @@
                 .then((resp) => resp.json())
                 .then(function(data) {
                     let result
-                    if(data.result) result = "Success! Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+data.result+"'>"+data.result+"</a>"
+                    if(data.result) document.getElementById("result").innerHTML = "Success! Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+data.result+"'>"+data.result+"</a>"
                     else { 
-                        result = "Error! "
+                        document.getElementById("result").textContent = "Error! "
                         document.getElementById("error").textContent = JSON.stringify(data)
-                    }
-                    document.getElementById("result").textContent = result
-                    
+                    }                    
                 })   
             })
         })     
