@@ -23,7 +23,7 @@
             <br /><br />
         </div>
         <div id="selector" style="display: none">
-            <select onchange="viewMethod(this)">
+            <select id="selectMethod" onchange="loadMethod(this)">
                 <option disabled selected value>-- select a function --</option>
                 <option value="register">register</option>
                 <option value="immigrate">immigrate</option>    
@@ -35,15 +35,44 @@
                 <option value="dispute">dispute</option>    
                 <option value="reassign">ressign</option>    
                 <option value="transfer">transfer</option>    
-            </select>    
+            </select>
+            <br /><br />
         </div>
     </div>
 </template>
-    
-<div id="method"></div>
-<div id="submit"></div>
 
+<template id="vote">
+    <label>ID: </label><input id="_id" type="number"><br /><br />
+</template>
+<template id="verify">
+    <label>Account: </label><input id="_account" type="text"><br /><br />
+</template>    
+<template id="dispute">
+    <label>Premeet: </label><input id="premeetDispute" type="checkbox"><br /><br />
+</template>    
+<template id="reassign">
+    <label>Premeet: </label><input id="premeetReassign" type="checkbox"><br /><br />
+</template>    
+<template id="transfer">
+    <label>To: </label><input id="_to" type="text" size="42">
+    <br /><br />
+    <label>Amount: </label><input id="_amount" type="number">
+    <br /><br />
+    <label>Token: </label><select id="_token"><option value="0">Personhood</option><option value="1">Registration</option><option value="2">Immigration</option></select><br /><br />
+</template>    
+<template id="sendTransactionTemplate">
+    <button onclick="sign()">Send transaction</button>    
+
+    <div id="response">
+        <div id="result">
+        </div>
+        <div id="link">
+        </div>
+    </div>    
+</template>
 <script>
+
+    var Polytopia = "0x901e01e2d433ab5384a9bbc1c97714c35077d86e"    
     
     function loadContainer() {
         var div = document.createElement("div");
@@ -88,7 +117,119 @@
         document.getElementById('publickey').style.display = "block"
         document.getElementById('selector').style.display = "block"
     }
+    function loadMethod(selectObject) {
+        if(document.getElementById("methodLoaded")) document.getElementById('methodLoaded').remove();
+        var div = document.createElement("div");
+        div.id = "methodLoaded";
+        document.getElementById("containerLoaded").appendChild(div);
+
+        if(document.getElementById(selectObject.value)) {
+            var method = document.getElementById(selectObject.value);
+            var clone = method.content.cloneNode(true)
+            document.getElementById('methodLoaded').appendChild(clone);        
+        }
+        var submit = document.getElementById("sendTransactionTemplate");
+        var clone = submit.content.cloneNode(true)
+        document.getElementById('methodLoaded').appendChild(clone);   
+    }
+    function intToHex(int) {
+        var str = Number(int).toString(16)
+        if(str.length%2 == 1) str = '0' + str
+        return "0x".concat(str)
+    }
+    function remove0x(key) {
+        if (key[0] == '0' && key[1] == 'x') return key.substring(2);
+        return key;
+    }
+    function sign() {
+        
+        let privateKey = new ethereumjs.Buffer.Buffer(remove0x(document.getElementById("pkey").value), 'hex')
+        let txParams = {}
+        txParams.gasPrice = "0x".concat((5*10**9).toString(16))
+        txParams.to = Polytopia
+        txParams.value = '0x0'
+
+        let selectMethod = document.getElementById("selectMethod");
+        let method = selectMethod.options[selectMethod.selectedIndex].value;        
+                
+        txParams.data = window[method]()
+
+        let publicKey = document.getElementById("address").textContent
+        
+        var eth_estimate = 'https://api-ropsten.etherscan.io/api?module=proxy&action=eth_estimateGas&from='+publicKey+'&data='+txParams.data+'&to='+Polytopia+'&apikey=37CMMDF13S2TYE3FRR4Y4X17F2ARPKQG7H'
+        console.log(eth_estimate)
+        fetch(eth_estimate)
+            .then((resp) => resp.json())
+            .then(function(data) {
+                txParams.gasLimit = data.result
+        }).then(function() {
+            var eth_getTransactionCount = 'https://api-ropsten.etherscan.io/api?module=proxy&action=eth_getTransactionCount&address='+publicKey+'&tag=latest&apikey=37CMMDF13S2TYE3FRR4Y4X17F2ARPKQG7H'
+            fetch(eth_getTransactionCount)
+                .then((resp) => resp.json())
+                .then(function(data) {
+                    txParams.nonce = data.result
+            }).then(function() {
+                
+            let tx = new ethereumjs.Tx(txParams)
+            tx.sign(privateKey)
+            let serializedTx = tx.serialize().toString('hex')
+            
+            var eth_sendRawTransaction = 'https://api-ropsten.etherscan.io/api?module=proxy&action=eth_sendRawTransaction&hex='+serializedTx+'&apikey=37CMMDF13S2TYE3FRR4Y4X17F2ARPKQG7H'
+            fetch(eth_sendRawTransaction)
+                .then((resp) => resp.json())
+                .then(function(data) {
+                    let result
+                    if(data.result) result = "Success! "
+                    else result = "Error! "
+                    document.getElementById("result").innerHTML = result+JSON.stringify(data)
+                    if(data.result) document.getElementById("link").innerHTML = "Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+data.result+"'>"+data.result+"</a>"
+                })   
+            })
+        })     
+    }
+    function register() {
+        return "0x1aa3a008"
+    }
+    function immigrate() {
+        return"0x0ca3a075"
+    }
+    function shuffle() {
+        return "0x2520bf04"
+    }
+    function vote() {
+        var id = Number(document.getElementById("_id").value)
+        var data = methods.vote.methodIdentifier.concat(id.toString(16).padStart(64, 0))
+        return data
+    }
+    function verify() {
+        var account = remove0x(document.getElementById("_account").value)
+        var data = "0x63a9c3d7".concat(account.padStart(64, 0))
+        return data
+    }
+    function completeVerification() {
+        return "0xa128644d"       
+    }
+    function claimPersonhood() {
+        return "0xd5dffb27"       
+    }        
+    function dispute() {
+        var premeet = Number(document.getElementById("premeetDispute").checked)
+        var data = "0x91ee7bbf".concat(String(premeet).padStart(64, 0))
+        return data
+    }
+    function reassign() {
+        var premeet = Number(document.getElementById("premeetReassign").checked)
+        var data = "0x62fa2f1f".concat(String(premeet).padStart(64, 0))
+        return data
+    }
+    function transfer() {
+        var _to = remove0x(document.getElementById("_to").value)
+        var _amount = document.getElementById("_amount").value
+        var _token = document.getElementById("_token").value
+        var data = "0xdbe58c1f".concat(_to.padStart(64, 0)).concat(_amount.padStart(64, 0)).concat(_token.padStart(64, 0))
+        return data
+    }
 </script>
-    
+
 </body>
 </html>
