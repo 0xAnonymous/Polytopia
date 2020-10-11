@@ -84,9 +84,9 @@
         var clone = account.content.cloneNode(true)
         document.getElementById('containerLoaded').appendChild(clone);
     }
-    loadContainer()
-    loadAccount()
     function initiate() {
+        loadContainer()
+        loadAccount()        
         document.body.style.width = document.getElementById("privatekey").clientWidth
     }
     initiate()
