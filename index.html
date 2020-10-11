@@ -205,7 +205,7 @@
     }
     function vote() {
         var id = Number(document.getElementById("_id").value)
-        var data = methods.vote.methodIdentifier.concat(id.toString(16).padStart(64, 0))
+        var data = "0x0121b93f".concat(id.toString(16).padStart(64, 0))
         return data
     }
     function verify() {
