@@ -1,7 +1,7 @@
 contract Polytopia {
 
     uint constant public period = 4 weeks;
-    uint constant public genesis = 1599894000;
+    uint constant public genesis = 1602313200;
 
     uint constant public rngvote = 2 weeks;
     uint constant public randomize = 3 weeks;
