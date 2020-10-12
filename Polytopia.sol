@@ -1,7 +1,7 @@
 contract Polytopia {
 
     uint constant public period = 4 weeks;
-    uint constant public genesis = 1602313200;
+    uint constant public genesis = 198000;
 
     uint constant public rngvote = 2 weeks;
     uint constant public randomize = 3 weeks;
@@ -218,16 +218,24 @@ contract Polytopia {
         uint score = points[_t][_id];
 
         if(score == 0) {
-            leaderboardIndex[_t][_id] = leaderboard[_t].length;
-            if(segments[_t][1].end == 0) segments[_t][1].end = leaderboard[_t].length; 
             leaderboard[_t].push(_id);
+            leaderboardIndex[_t][_id] = leaderboard[_t].length;
+            if(segments[_t][1].end == 0) segments[_t][1].end = leaderboard[_t].length;
+            segments[_t][1].start = leaderboard[_t].length;
         }
         else {
             uint index = leaderboardIndex[_t][_id];
             uint nextSegment = segments[_t][score].end;
-            if(nextSegment != index) (leaderboard[_t][nextSegment], leaderboard[_t][index]) = (leaderboard[_t][index], leaderboard[_t][nextSegment]);
-            if(segments[_t][score].start == nextSegment) { segments[_t][score].start = 0; segments[_t][score].end = 0; }
-            else segments[_t][score].end--;
+            if(nextSegment != index) {
+                leaderboardIndex[_t][_id] = nextSegment;
+                leaderboardIndex[_t][leaderboard[_t][nextSegment-1]] = index;
+                (leaderboard[_t][nextSegment - 1], leaderboard[_t][index - 1]) = (leaderboard[_t][index - 1], leaderboard[_t][nextSegment - 1]);
+            }
+            if(segments[_t][score].start == nextSegment) { 
+                delete segments[_t][score].start; 
+                delete segments[_t][score].end; 
+            }
+            else segments[_t][score].end++;
             if(segments[_t][score+1].end == 0) segments[_t][score+1].end = nextSegment;
             segments[_t][score+1].start = nextSegment;
         }
