@@ -193,7 +193,10 @@
                         .then((resp) => resp.json())
                         .then(function(data) {
                             let result
-                            if(data.result) document.getElementById("result").innerHTML = "Success! Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+data.result+"'>"+data.result+"</a>"
+                            if(data.result) {
+                                document.getElementById("result").innerHTML = "Success! Txn Hash: "+"<a href='https://ropsten.etherscan.io/tx/"+data.result+"'>"+data.result+"</a>"
+                                document.getElementById("error").textContent = ""
+                            }
                             else { 
                                 document.getElementById("result").textContent = "Error! "
                                 document.getElementById("error").textContent = JSON.stringify(data)
