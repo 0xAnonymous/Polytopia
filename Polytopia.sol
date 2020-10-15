@@ -13,7 +13,7 @@ contract Polytopia {
     mapping (uint => uint) public entropy;
 
     mapping (uint => uint) public hour;
-    uint[] public clockwork;
+    uint[24] public clockwork;
     uint public clock_nonce;
 
     function scheduleHour(uint _t) internal {
@@ -66,7 +66,7 @@ contract Polytopia {
     }
 
     constructor() public {
-        for(uint i; i<24; i++) clockwork.push(i);
+        for(uint i; i<24; i++) clockwork[i] = i;
         uint _t = schedule();
         balanceOf[_t][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;
         balanceOf[_t][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;
