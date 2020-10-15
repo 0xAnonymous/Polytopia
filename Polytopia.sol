@@ -86,7 +86,11 @@ contract Polytopia {
         uint randomNumber = _shuffled + entropy[_t]%(registered[_t][Rank.Pair] + 1 - _shuffled);
         entropy[_t] = uint(keccak256(abi.encodePacked(entropy[_t], registryIndex[_t][Rank.Pair][randomNumber])));
         (registryIndex[_t][Rank.Pair][_shuffled], registryIndex[_t][Rank.Pair][randomNumber]) = (registryIndex[_t][Rank.Pair][randomNumber], registryIndex[_t][Rank.Pair][_shuffled]); 
-        registry[_t][registryIndex[_t][Rank.Pair][_shuffled]] = Reg(Rank.Pair, _shuffled, false);
+        registry[_t][registryIndex[_t][Rank.Pair][_shuffled]] = Reg({
+                                                                    rank: Rank.Pair,
+                                                                    id: _shuffled, 
+                                                                    verified: false
+                                                                });
     }
     function shuffle() external {
         uint _t = schedule(); 
@@ -172,7 +176,6 @@ contract Polytopia {
     function _verify(address _account, address _signer, uint _t) internal {
         require(inState(hour[_t], 0, _t));
         require(_account != _signer);
-        uint peer = registry[_t][_signer].id;
         require(registry[_t][_signer].rank == Rank.Pair);
         require(registrationPhases[_t][_signer] == Registration.Complete);
         Rank rank = registry[_t][_account].rank;
@@ -189,6 +192,7 @@ contract Polytopia {
             pair = 1 + (unit - 1)%(registered[_t][Rank.Pair]/2);
         }
         require(disputed[_t][pair] == false);
+        uint peer = registry[_t][_signer].id;
         require(pair == (peer+1)/2);
         judgement[_t][rank][unit][peer%2] = true;        
     }
