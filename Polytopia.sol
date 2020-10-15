@@ -118,7 +118,7 @@ contract Polytopia {
         uint courts = registered[_t][Rank.Court];
         registryIndex[_t][Rank.Court][courts] = msg.sender;
         registry[_t][msg.sender].id = courts;
-        balanceOf[_t][Token.Immigration][registryIndex[_t-period*2][Rank.Pair][courts%registered[_t-period*2][Rank.Pair]]]++;
+        balanceOf[_t][Token.Immigration][registryIndex[_t-period*2][Rank.Pair][1 + (courts - 1)%registered[_t-period*2][Rank.Pair]]]++;
     }
     
     function isVerified(Rank _rank, uint _unit, uint _t) public view returns (bool) {
