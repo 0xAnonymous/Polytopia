@@ -87,7 +87,7 @@ contract Polytopia {
         uint randomNumber = _shuffled + entropy[_t]%(registered[_t][Rank.Pair] + 1 - _shuffled);
         entropy[_t] = uint(keccak256(abi.encodePacked(entropy[_t], registryIndex[_t][Rank.Pair][randomNumber])));
         (registryIndex[_t][Rank.Pair][_shuffled], registryIndex[_t][Rank.Pair][randomNumber]) = (registryIndex[_t][Rank.Pair][randomNumber], registryIndex[_t][Rank.Pair][_shuffled]); 
-        registry[_t][registryIndex[_t][Rank.Pair][_shuffled]].id = _shuffled;
+        registry[_t][registryIndex[_t][Rank.Pair][_shuffled]] = Reg(Rank.Pair, _shuffled, false);
     }
     function shuffle() external {
         uint _t = schedule(); 
@@ -101,19 +101,18 @@ contract Polytopia {
     function register() external {
         uint _t = schedule();
         require(inState(0, rngvote, _t));
-        require(registry[_t][msg.sender].id == 0 && registry[_t][msg.sender].rank != Rank.Pair);
+        require(registry[_t][msg.sender].id == 0 && registrationPhases[_t][msg.sender] == Registration.None);
         require(balanceOf[_t][Token.Registration][msg.sender] >= 1);
         balanceOf[_t][Token.Registration][msg.sender]--;
         registered[_t][Rank.Pair]++;
         registryIndex[_t][Rank.Pair][registered[_t][Rank.Pair]] = msg.sender;
-        registry[_t][msg.sender].rank = Rank.Pair;
         registrationPhases[_t][msg.sender] = Registration.Commit;
         balanceOf[_t+period*2][Token.Immigration][msg.sender]++;
     }
     function immigrate() external {
         uint _t = schedule();
         require(inState(0, rngvote, _t));
-        require(registry[_t][msg.sender].id == 0 && registry[_t][msg.sender].rank != Rank.Pair);
+        require(registry[_t][msg.sender].id == 0 && registrationPhases[_t][msg.sender] == Registration.None);
         require(balanceOf[_t][Token.Immigration][msg.sender] >= 1);
         balanceOf[_t][Token.Immigration][msg.sender]--;
         registered[_t][Rank.Court]++;
@@ -130,25 +129,25 @@ contract Polytopia {
 
     function dispute(bool _premeet) external {
         uint _t; if(_premeet == true) _t = t(-1); else _t = t(-2);
-        uint id = registry[_t][msg.sender].id;
-        require(id != 0);
         require(registry[_t][msg.sender].rank == Rank.Pair);
-        uint pair = (id+1)/2;
+        uint pair = (registry[_t][msg.sender].id+1)/2;
         if(_premeet == false) require(!isVerified(Rank.Pair, pair, _t));
         disputed[_t][pair] = true; 
     }
     function reassign(bool _premeet) external {
         uint _t; if(_premeet == true) _t = t(-1); else _t = t(-2);
-        uint id = registry[_t][msg.sender].id;
-        require(id != 0);
         uint countPairs = registered[_t][Rank.Pair]/2;
         uint pair;
+        uint id = registry[_t][msg.sender].id;
         if(registry[_t][msg.sender].rank == Rank.Pair) {
             require(registrationPhases[_t][msg.sender] == Registration.Complete);
             pair = (id + 1)/2;
             registry[_t][msg.sender].rank = Rank.Court;
         }
-        else pair = 1 + (id - 1)%countPairs;
+        else {
+            require(id != 0);
+            pair = 1 + (id - 1)%countPairs;
+        }
         require(disputed[_t][pair] == true);
         uint court = 1 + uint(keccak256(abi.encodePacked(msg.sender, pair)))%countPairs;
         uint i = 0;
@@ -174,21 +173,20 @@ contract Polytopia {
     function _verify(address _account, address _signer, uint _t) internal {
         require(inState(hour[_t], 0, _t));
         require(_account != _signer);
-        uint id = registry[_t][_account].id;
-        require(id != 0);
         uint peer = registry[_t][_signer].id;
         require(registry[_t][_signer].rank == Rank.Pair);
         require(registrationPhases[_t][_signer] == Registration.Complete);
-        require(peer != 0);
         Rank rank = registry[_t][_account].rank;
         uint unit;
         uint pair;
+        uint id = registry[_t][_account].id;
         if(rank == Rank.Pair) {
             pair = (id + 1)/2;
             unit = pair;
         }
         else {
             unit = id;
+            require(id != 0);
             pair = 1 + (unit - 1)%(registered[_t][Rank.Pair]/2);
         }
         require(disputed[_t][pair] == false);
