@@ -70,8 +70,10 @@ contract Polytopia {
         uint _t = schedule();
         balanceOf[_t][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;
         balanceOf[_t][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;
+        registered[_t-period*2][Rank.Pair] = 4;
         balanceOf[_t+period][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;
-        balanceOf[_t+period][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;        
+        balanceOf[_t+period][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;   
+        registered[_t-period][Rank.Pair] = 4;
         
     }
     function initializeRandomization(uint _t) internal {
@@ -118,7 +120,8 @@ contract Polytopia {
         uint courts = registered[_t][Rank.Court];
         registryIndex[_t][Rank.Court][courts] = msg.sender;
         registry[_t][msg.sender].id = courts;
-        balanceOf[_t][Token.Immigration][registryIndex[_t-period*2][Rank.Pair][1 + (courts - 1)%registered[_t-period*2][Rank.Pair]]]++;
+        uint authorizeBorderToken = 1 + (courts - 1)%registered[_t-period*2][Rank.Pair];
+        balanceOf[_t][Token.Immigration][registryIndex[_t-period*2][Rank.Pair][authorizeBorderToken]]++;
     }
     
     function isVerified(Rank _rank, uint _unit, uint _t) public view returns (bool) {
