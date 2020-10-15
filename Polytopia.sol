@@ -68,8 +68,11 @@ contract Polytopia {
     constructor() public {
         for(uint i; i<24; i++) clockwork.push(i);
         uint _t = schedule();
-        balanceOf[_t][Token.Registration][msg.sender] = 2**256-1;
-        balanceOf[_t+period][Token.Registration][msg.sender] = 2**256-1;
+        balanceOf[_t][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;
+        balanceOf[_t][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;
+        balanceOf[_t+period][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;
+        balanceOf[_t+period][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;        
+        
     }
     function initializeRandomization(uint _t) internal {
         entropy[_t] = seed[_t] = uint(registryIndex[_t][Rank.Pair][leaderboard[_t][0]]);
