@@ -140,8 +140,8 @@ contract Polytopia {
     function reassign(bool _premeet) external {
         uint _t; if(_premeet == true) _t = t(-1); else _t = t(-2);
         uint countPairs = registered[_t][Rank.Pair]/2;
-        uint pair;
         uint id = registry[_t][msg.sender].id;
+        uint pair;
         if(registry[_t][msg.sender].rank == Rank.Pair) {
             require(registrationPhases[_t][msg.sender] == Registration.Complete);
             pair = (id + 1)/2;
