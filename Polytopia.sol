@@ -71,8 +71,9 @@ contract Polytopia {
         balanceOf[_t][Token.Registration][0xeCDF31BdbA6990D4725Ced0C8Ccf2Eca0f2a2b7E]++;
         balanceOf[_t][Token.Registration][0x9e3d03A570fd890198BAD10C27e66518D3FeA3A9]++;
         balanceOf[_t][Token.Registration][0xb63E702B54012D160d77545A5D8F4032D458dAc4]++;
-        balanceOf[_t][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308]++;
-        balanceOf[_t][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;
+        balanceOf[_t][Token.Registration][0x915d28d2EA1B85973Fe44A667B8a82E5d1431E9e]++;
+        balanceOf[_t][Token.Immigration][0x8948216984eFbe3e7136Ea0ADd012A761d7227Bc]++;
+        balanceOf[_t][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 3;
         registered[_t-period*2][Rank.Pair] = 4;
         balanceOf[_t+period][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;
         balanceOf[_t+period][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;
