@@ -153,9 +153,9 @@ contract Polytopia {
         else pair = 1 + (id - 1)%countPairs;
         require(disputed[_t][pair] == true);
         uint court = 1 + uint(keccak256(abi.encodePacked(msg.sender, pair)))%countPairs;
-        uint i = 0;
-        while(registryIndex[_t][Rank.Court][court+countPairs*i] != address(0)) i++;
-        registry[_t][msg.sender].id = court+countPairs*i;
+        while(registryIndex[_t][Rank.Court][court] != address(0)) court += countPairs;
+        registry[_t][msg.sender].id = court;
+        registryIndex[_t][Rank.Court][court] = msg.sender;        
     }
     function completeVerification() external {
         uint _t = t(-2);
