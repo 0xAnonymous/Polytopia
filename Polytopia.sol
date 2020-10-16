@@ -26,8 +26,8 @@ contract Polytopia {
     }
 
     enum Rank { Court, Pair }
-    enum Registration { None, Commit, Vote, Complete }
-    
+    enum Registration { Commit, Vote, Complete }
+
     enum Token { Personhood, Registration, Immigration }
 
     struct Reg {
@@ -109,7 +109,6 @@ contract Polytopia {
         registered[_t][Rank.Pair]++;
         registryIndex[_t][Rank.Pair][registered[_t][Rank.Pair]] = msg.sender;
         registry[_t][msg.sender].rank = Rank.Pair;
-        registrationPhases[_t][msg.sender] = Registration.Commit;
         balanceOf[_t+period*2][Token.Immigration][msg.sender]++;
     }
     function immigrate() external {
@@ -239,6 +238,7 @@ contract Polytopia {
         require(inState(rngvote, randomize, _t)); 
         require(_id < registered[_t][Rank.Pair]);
 
+        require(registry[_t][msg.sender].rank == Rank.Pair);
         require(registrationPhases[_t][msg.sender] == Registration.Commit);
         registrationPhases[_t][msg.sender] = Registration.Vote;
 
