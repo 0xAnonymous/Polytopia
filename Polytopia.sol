@@ -160,10 +160,9 @@ contract Polytopia {
     function completeVerification() external {
         uint _t = t(-2);
         require(registry[_t][msg.sender].verified == false);
-        Rank rank = registry[_t][msg.sender].rank;
         uint id = registry[_t][msg.sender].id;
         uint pair;
-        if(rank == Rank.Court) {
+        if(registry[_t][msg.sender].rank == Rank.Court) {
             require(isVerified(Rank.Court, id, _t));
             pair = 1 + (id - 1)%(registered[_t][Rank.Pair]/2);
         }
