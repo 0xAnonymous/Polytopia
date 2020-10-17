@@ -1,5 +1,7 @@
 contract Oracle {
 
+    mapping (uint => uint) public seed;
+
     mapping (uint => mapping (uint => uint)) public points;
     mapping (uint => uint[]) public leaderboard;
     mapping (uint => mapping (uint => uint)) public leaderboardIndex;
@@ -51,7 +53,6 @@ contract Polytopia is Oracle {
 
     function schedule() public view returns (uint) { return genesis + ((block.timestamp - genesis) / period) * period; }
 
-    mapping (uint => uint) public seed;
     mapping (uint => uint) public entropy;
 
     mapping (uint => uint) public hour;
@@ -102,7 +103,7 @@ contract Polytopia is Oracle {
         uint t = schedule();
         balanceOf[t][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 5;
         balanceOf[t][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 3;
-        registered[t-period*2][Rank.Pair]++;
+        registered[t-period][Rank.Pair]++;
     }
     
     function initializeRandomization(uint _t) internal {
