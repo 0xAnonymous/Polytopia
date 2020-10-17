@@ -1,4 +1,46 @@
-contract Polytopia {
+contract Oracle {
+
+    mapping (uint => mapping (uint => uint)) public points;
+    mapping (uint => uint[]) public leaderboard;
+    mapping (uint => mapping (uint => uint)) public leaderboardIndex;
+
+    struct Score {
+        uint start;
+        uint end;
+    }
+    mapping (uint => mapping (uint => Score)) public segments;
+
+    function _vote(uint _id, uint _t) internal {
+
+        uint score = points[_t][_id];
+
+        if(score == 0) {
+            leaderboard[_t].push(_id);
+            leaderboardIndex[_t][_id] = leaderboard[_t].length;
+            if(segments[_t][1].end == 0) segments[_t][1].end = leaderboard[_t].length;
+            segments[_t][1].start = leaderboard[_t].length;
+        }
+        else {
+            uint index = leaderboardIndex[_t][_id];
+            uint nextSegment = segments[_t][score].end;
+            if(nextSegment != index) {
+                leaderboardIndex[_t][_id] = nextSegment;
+                leaderboardIndex[_t][leaderboard[_t][nextSegment-1]] = index;
+                (leaderboard[_t][nextSegment - 1], leaderboard[_t][index - 1]) = (leaderboard[_t][index - 1], leaderboard[_t][nextSegment - 1]);
+            }
+            if(segments[_t][score].start == nextSegment) { 
+                delete segments[_t][score].start; 
+                delete segments[_t][score].end; 
+            }
+            else segments[_t][score].end++;
+            if(segments[_t][score+1].end == 0) segments[_t][score+1].end = nextSegment;
+            segments[_t][score+1].start = nextSegment;
+        }
+        points[_t][_id]++;
+    }
+}
+
+contract Polytopia is Oracle {
 
     uint constant public period = 4 weeks;
     uint constant public genesis = 1604127600;
@@ -50,16 +92,6 @@ contract Polytopia {
     mapping (uint => mapping (Token => mapping (address => uint))) public balanceOf;
     mapping (uint => mapping (Token => mapping (address => mapping (address => uint)))) public allowed;
 
-    mapping (uint => mapping (uint => uint)) public points;
-    mapping (uint => uint[]) public leaderboard;
-    mapping (uint => mapping (uint => uint)) public leaderboardIndex;
-
-    struct Score {
-        uint start;
-        uint end;
-    }
-    mapping (uint => mapping (uint => Score)) public segments;
-    
     function inState(uint _prev, uint _next, uint _t) internal view returns (bool) {
         if(_prev != 0) return (block.timestamp > _t + _prev);
         if(_next != 0) return (block.timestamp < _t + _next);
@@ -72,6 +104,7 @@ contract Polytopia {
         balanceOf[_t][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 3;
         registered[_t-period*2][Rank.Pair]++;
     }
+    
     function initializeRandomization(uint _t) internal {
         entropy[_t] = seed[_t] = uint(registryIndex[_t][Rank.Pair][leaderboard[_t][0]]);
         scheduleHour(_t);
@@ -85,7 +118,6 @@ contract Polytopia {
         (registryIndex[_t][Rank.Pair][_shuffled], registryIndex[_t][Rank.Pair][randomNumber]) = (registryIndex[_t][Rank.Pair][randomNumber], registryIndex[_t][Rank.Pair][_shuffled]); 
         registry[_t][registryIndex[_t][Rank.Pair][_shuffled]].id = _shuffled;
     }
-
     function shuffle() external {
         uint _t = schedule(); 
         require(inState(randomize, premeet, _t));
@@ -157,6 +189,7 @@ contract Polytopia {
         registry[_t][msg.sender].id = court;
         registryIndex[_t][Rank.Court][court] = msg.sender;        
     }
+    
     function completeVerification() external {
         uint _t = schedule()-period;
         require(registry[_t][msg.sender].verified == false);
@@ -208,6 +241,7 @@ contract Polytopia {
         _verify(msg.sender, ecrecover(_msgHash, v[0], r[0], s[0]), _t);
         _verify(msg.sender, ecrecover(_msgHash, v[1], r[1], s[1]), _t);
     }
+    
     function claimPersonhood() external {
         uint _t = schedule();
         require(proofOfPersonhood[_t][msg.sender] == 0 && balanceOf[_t][Token.Personhood][msg.sender] >= 1);
@@ -216,6 +250,7 @@ contract Polytopia {
         proofOfPersonhood[_t][msg.sender] = population[_t];
         personhoodIndex[_t][population[_t]] = msg.sender;
     }
+    
     function _transfer(uint _t, address _from, address _to, uint _value, Token _token) internal { 
         require(balanceOf[_t][_token][_from] >= _value);
         balanceOf[_t][_token][_from] -= _value;
@@ -233,39 +268,14 @@ contract Polytopia {
         _transfer(_t, _from, _to, _value, _token);
         allowed[_t][_token][_from][msg.sender] -= _value;
     }
+    
     function vote(uint _id) external {
         uint _t = schedule(); 
         require(inState(rngvote, randomize, _t)); 
-        require(_id != 0 && _id <= registered[_t][Rank.Pair]);
-
         require(registry[_t][msg.sender].rank == Rank.Pair);
         require(registrationPhases[_t][msg.sender] == Registration.Commit);
         registrationPhases[_t][msg.sender] = Registration.Vote;
-
-        uint score = points[_t][_id];
-
-        if(score == 0) {
-            leaderboard[_t].push(_id);
-            leaderboardIndex[_t][_id] = leaderboard[_t].length;
-            if(segments[_t][1].end == 0) segments[_t][1].end = leaderboard[_t].length;
-            segments[_t][1].start = leaderboard[_t].length;
-        }
-        else {
-            uint index = leaderboardIndex[_t][_id];
-            uint nextSegment = segments[_t][score].end;
-            if(nextSegment != index) {
-                leaderboardIndex[_t][_id] = nextSegment;
-                leaderboardIndex[_t][leaderboard[_t][nextSegment-1]] = index;
-                (leaderboard[_t][nextSegment - 1], leaderboard[_t][index - 1]) = (leaderboard[_t][index - 1], leaderboard[_t][nextSegment - 1]);
-            }
-            if(segments[_t][score].start == nextSegment) { 
-                delete segments[_t][score].start; 
-                delete segments[_t][score].end; 
-            }
-            else segments[_t][score].end++;
-            if(segments[_t][score+1].end == 0) segments[_t][score+1].end = nextSegment;
-            segments[_t][score+1].start = nextSegment;
-        }
-        points[_t][_id]++;
+        require(_id != 0 && _id <= registered[_t][Rank.Pair]);
+        _vote(_id, _t);
     }
 }
