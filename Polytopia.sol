@@ -45,7 +45,7 @@ contract Oracle {
 contract Polytopia is Oracle {
 
     uint constant public period = 4 weeks;
-    uint constant public genesis = 1601708400;
+    uint constant public genesis = 1604127600;
 
     uint constant public rngvote = 2 weeks;
     uint constant public randomize = 3 weeks;
