@@ -99,10 +99,10 @@ contract Polytopia is Oracle {
 
     constructor() public {
         for(uint i; i<24; i++) clockwork[i] = i;
-        uint _t = schedule();
-        balanceOf[_t][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 5;
-        balanceOf[_t][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 3;
-        registered[_t-period*2][Rank.Pair]++;
+        uint t = schedule();
+        balanceOf[t][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 5;
+        balanceOf[t][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 3;
+        registered[t-period*2][Rank.Pair]++;
     }
     
     function initializeRandomization(uint _t) internal {
@@ -119,41 +119,41 @@ contract Polytopia is Oracle {
         registry[_t][registryIndex[_t][Rank.Pair][_shuffled]].id = _shuffled;
     }
     function shuffle() external {
-        uint _t = schedule(); 
-        require(inState(randomize, premeet, _t));
-        require(registrationPhases[_t][msg.sender] == Registration.Vote);
-        registrationPhases[_t][msg.sender] = Registration.Complete;
-        _shuffle(_t);
+        uint t = schedule(); 
+        require(inState(randomize, premeet, t));
+        require(registrationPhases[t][msg.sender] == Registration.Vote);
+        registrationPhases[t][msg.sender] = Registration.Complete;
+        _shuffle(t);
     }
     function lateShuffle(uint _iterations) external { 
-        uint _t = schedule();
-        require(inState(premeet, 0, _t));
-        for (uint i = 0; i < _iterations; i++) _shuffle(_t); 
+        uint t = schedule();
+        require(inState(premeet, 0, t));
+        for (uint i = 0; i < _iterations; i++) _shuffle(t); 
     }
 
     function register() external {
-        uint _t = schedule();
-        require(inState(0, rngvote, _t));
-        require(registry[_t][msg.sender].id == 0 && registry[_t][msg.sender].rank != Rank.Pair);
-        require(balanceOf[_t][Token.Registration][msg.sender] >= 1);
-        balanceOf[_t][Token.Registration][msg.sender]--;
-        registered[_t][Rank.Pair]++;
-        registryIndex[_t][Rank.Pair][registered[_t][Rank.Pair]] = msg.sender;
-        registry[_t][msg.sender].rank = Rank.Pair;
-        balanceOf[_t+period][Token.Immigration][msg.sender]++;
+        uint t = schedule();
+        require(inState(0, rngvote, t));
+        require(registry[t][msg.sender].id == 0 && registry[t][msg.sender].rank != Rank.Pair);
+        require(balanceOf[t][Token.Registration][msg.sender] >= 1);
+        balanceOf[t][Token.Registration][msg.sender]--;
+        registered[t][Rank.Pair]++;
+        registryIndex[t][Rank.Pair][registered[t][Rank.Pair]] = msg.sender;
+        registry[t][msg.sender].rank = Rank.Pair;
+        balanceOf[t+period][Token.Immigration][msg.sender]++;
     }
     function immigrate() external {
-        uint _t = schedule();
-        require(inState(0, rngvote, _t));
-        require(registry[_t][msg.sender].id == 0 && registry[_t][msg.sender].rank != Rank.Pair);
-        require(balanceOf[_t][Token.Immigration][msg.sender] >= 1);
-        balanceOf[_t][Token.Immigration][msg.sender]--;
-        registered[_t][Rank.Court]++;
-        uint courts = registered[_t][Rank.Court];
-        registryIndex[_t][Rank.Court][courts] = msg.sender;
-        registry[_t][msg.sender].id = courts;
-        uint authorizeBorderToken = 1 + (courts - 1)%registered[_t-period][Rank.Pair];
-        balanceOf[_t][Token.Immigration][registryIndex[_t-period][Rank.Pair][authorizeBorderToken]]++;
+        uint t = schedule();
+        require(inState(0, rngvote, t));
+        require(registry[t][msg.sender].id == 0 && registry[t][msg.sender].rank != Rank.Pair);
+        require(balanceOf[t][Token.Immigration][msg.sender] >= 1);
+        balanceOf[t][Token.Immigration][msg.sender]--;
+        registered[t][Rank.Court]++;
+        uint courts = registered[t][Rank.Court];
+        registryIndex[t][Rank.Court][courts] = msg.sender;
+        registry[t][msg.sender].id = courts;
+        uint authorizeBorderToken = 1 + (courts - 1)%registered[t-period][Rank.Pair];
+        balanceOf[t][Token.Immigration][registryIndex[t-period][Rank.Pair][authorizeBorderToken]]++;
     }
     
     function isVerified(Rank _rank, uint _unit, uint _t) public view returns (bool) {
@@ -161,49 +161,49 @@ contract Polytopia is Oracle {
     }
 
     function dispute(bool _premeet) external {
-        uint _t = schedule();
-        if(_premeet != true) _t -= period;
-        require(registry[_t][msg.sender].rank == Rank.Pair);
-        uint id = registry[_t][msg.sender].id;
+        uint t = schedule();
+        if(_premeet != true) t -= period;
+        require(registry[t][msg.sender].rank == Rank.Pair);
+        uint id = registry[t][msg.sender].id;
         require(id != 0);
         uint pair = (id+1)/2;
-        if(_premeet == false) require(!isVerified(Rank.Pair, pair, _t));
-        disputed[_t][pair] = true;
+        if(_premeet == false) require(!isVerified(Rank.Pair, pair, t));
+        disputed[t][pair] = true;
     }
     function reassign(bool _premeet) external {
-        uint _t = schedule();
-        if(_premeet != true) _t -= period;
-        uint id = registry[_t][msg.sender].id;
+        uint t = schedule();
+        if(_premeet != true) t -= period;
+        uint id = registry[t][msg.sender].id;
         require(id != 0);
-        uint countPairs = registered[_t][Rank.Pair]/2;
+        uint countPairs = registered[t][Rank.Pair]/2;
         uint pair;
-        if(registry[_t][msg.sender].rank == Rank.Pair) {
-            require(registrationPhases[_t][msg.sender] == Registration.Complete);
+        if(registry[t][msg.sender].rank == Rank.Pair) {
+            require(registrationPhases[t][msg.sender] == Registration.Complete);
             pair = (id + 1)/2;
-            registry[_t][msg.sender].rank = Rank.Court;
+            registry[t][msg.sender].rank = Rank.Court;
         }
         else pair = 1 + (id - 1)%countPairs;
-        require(disputed[_t][pair] == true);
+        require(disputed[t][pair] == true);
         uint court = 1 + uint(keccak256(abi.encodePacked(msg.sender, pair)))%countPairs;
-        while(registryIndex[_t][Rank.Court][court] != address(0)) court += countPairs;
-        registry[_t][msg.sender].id = court;
-        registryIndex[_t][Rank.Court][court] = msg.sender;        
+        while(registryIndex[t][Rank.Court][court] != address(0)) court += countPairs;
+        registry[t][msg.sender].id = court;
+        registryIndex[t][Rank.Court][court] = msg.sender;        
     }
     
     function completeVerification() external {
-        uint _t = schedule()-period;
-        require(registry[_t][msg.sender].verified == false);
-        uint id = registry[_t][msg.sender].id;
+        uint t = schedule()-period;
+        require(registry[t][msg.sender].verified == false);
+        uint id = registry[t][msg.sender].id;
         uint pair;
-        if(registry[_t][msg.sender].rank == Rank.Court) {
-            require(isVerified(Rank.Court, id, _t));
-            pair = 1 + (id - 1)%(registered[_t][Rank.Pair]/2);
+        if(registry[t][msg.sender].rank == Rank.Court) {
+            require(isVerified(Rank.Court, id, t));
+            pair = 1 + (id - 1)%(registered[t][Rank.Pair]/2);
         }
         else pair = (id + 1) /2;
-        require(isVerified(Rank.Pair, pair, _t));
-        balanceOf[_t+period][Token.Personhood][msg.sender]++;
-        balanceOf[_t+period][Token.Registration][msg.sender]++;
-        registry[_t][msg.sender].verified = true;
+        require(isVerified(Rank.Pair, pair, t));
+        balanceOf[t+period][Token.Personhood][msg.sender]++;
+        balanceOf[t+period][Token.Registration][msg.sender]++;
+        registry[t][msg.sender].verified = true;
     }
     function _verify(address _account, address _signer, uint _t) internal {
         require(inState(hour[_t], 0, _t));
@@ -234,21 +234,21 @@ contract Polytopia is Oracle {
     function msgHash(uint _t) internal view returns (bytes32) { return keccak256(abi.encodePacked(msg.sender, _t)); }
 
     function uploadSignature(bytes32 r, bytes32 s, uint8 v) external {
-        uint _t = schedule()-period; _verify(msg.sender, ecrecover(msgHash(_t), v, r, s), _t);
+        uint t = schedule()-period; _verify(msg.sender, ecrecover(msgHash(t), v, r, s), t);
     }
     function courtSignature(bytes32[2] calldata r, bytes32[2] calldata s, uint8[2] calldata v) external {
-        uint _t = schedule()-period; bytes32 _msgHash = msgHash(_t);
-        _verify(msg.sender, ecrecover(_msgHash, v[0], r[0], s[0]), _t);
-        _verify(msg.sender, ecrecover(_msgHash, v[1], r[1], s[1]), _t);
+        uint t = schedule()-period; bytes32 _msgHash = msgHash(t);
+        _verify(msg.sender, ecrecover(_msgHash, v[0], r[0], s[0]), t);
+        _verify(msg.sender, ecrecover(_msgHash, v[1], r[1], s[1]), t);
     }
     
     function claimPersonhood() external {
-        uint _t = schedule();
-        require(proofOfPersonhood[_t][msg.sender] == 0 && balanceOf[_t][Token.Personhood][msg.sender] >= 1);
-        balanceOf[_t][Token.Personhood][msg.sender]--;
-        population[_t]++;
-        proofOfPersonhood[_t][msg.sender] = population[_t];
-        personhoodIndex[_t][population[_t]] = msg.sender;
+        uint t = schedule();
+        require(proofOfPersonhood[t][msg.sender] == 0 && balanceOf[t][Token.Personhood][msg.sender] >= 1);
+        balanceOf[t][Token.Personhood][msg.sender]--;
+        population[t]++;
+        proofOfPersonhood[t][msg.sender] = population[t];
+        personhoodIndex[t][population[t]] = msg.sender;
     }
     
     function _transfer(uint _t, address _from, address _to, uint _value, Token _token) internal { 
@@ -263,19 +263,19 @@ contract Polytopia is Oracle {
         allowed[schedule()][_token][msg.sender][_spender] = _value;
     }
     function transferFrom(address _from, address _to, uint _value, Token _token) external {
-        uint _t = schedule();
-        require(allowed[_t][_token][_from][msg.sender] >= _value);
-        _transfer(_t, _from, _to, _value, _token);
-        allowed[_t][_token][_from][msg.sender] -= _value;
+        uint t = schedule();
+        require(allowed[t][_token][_from][msg.sender] >= _value);
+        _transfer(t, _from, _to, _value, _token);
+        allowed[t][_token][_from][msg.sender] -= _value;
     }
     
     function vote(uint _id) external {
-        uint _t = schedule(); 
-        require(inState(rngvote, randomize, _t)); 
-        require(registry[_t][msg.sender].rank == Rank.Pair);
-        require(registrationPhases[_t][msg.sender] == Registration.Commit);
-        registrationPhases[_t][msg.sender] = Registration.Vote;
-        require(_id != 0 && _id <= registered[_t][Rank.Pair]);
-        _vote(_id, _t);
+        uint t = schedule(); 
+        require(inState(rngvote, randomize, t)); 
+        require(registry[t][msg.sender].rank == Rank.Pair);
+        require(registrationPhases[t][msg.sender] == Registration.Commit);
+        registrationPhases[t][msg.sender] = Registration.Vote;
+        require(_id != 0 && _id <= registered[t][Rank.Pair]);
+        _vote(_id, t);
     }
 }
