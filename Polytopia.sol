@@ -104,8 +104,8 @@ contract Polytopia is Oracle {
         balanceOf[_t][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 5;
         balanceOf[_t][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 3;
         registered[_t-period*2][Rank.Pair]++;
-        balanceOf[_t+period][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 8;
-        balanceOf[_t+period][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 4;
+        balanceOf[_t+period][Token.Registration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 5;
+        balanceOf[_t+period][Token.Immigration][0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308] = 3;
         registered[_t-period][Rank.Pair]++;
     }
     function initializeRandomization(uint _t) internal {
