@@ -41,10 +41,9 @@ contract Polytopia {
     }
 
     constructor() public {
-        uint t = schedule();
         address genesisAccount;
         uint genesisPopulation;
-        balanceOf[t][Token.Registration][genesisAccount] = genesisPopulation;
+        balanceOf[schedule()][Token.Registration][genesisAccount] = genesisPopulation;
     }
 
     function initializeRandomization(uint _t) internal {
