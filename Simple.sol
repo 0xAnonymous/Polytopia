@@ -118,7 +118,6 @@ contract Polytopia {
         uint countPairs = registered[t][Rank.Pair]/2;
         uint pair;
         if(registry[t][msg.sender].rank == Rank.Pair) {
-            require(committed[t][msg.sender] == true);
             pair = (id + 1)/2;
             registry[t][msg.sender].rank = Rank.Court;
         }
