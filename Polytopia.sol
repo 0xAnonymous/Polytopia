@@ -6,11 +6,11 @@ contract Polytopia {
     uint constant public randomize = 2 weeks;
     uint constant public premeet = 3 weeks;
 
+    uint public hour;
+
     function schedule() public view returns (uint) { return genesis + ((block.timestamp - genesis) / period) * period; }
 
-    mapping (uint => uint) public entropy;
-
-    mapping (uint => uint) public hour;
+    uint public entropy;
 
     enum Rank { Court, Pair }
 
@@ -47,16 +47,15 @@ contract Polytopia {
         balanceOf[schedule()][Token.Registration][genesisAccount] = genesisPopulation;
     }
 
-    function initializeRandomization(uint _t) internal {
-        entropy[_t] = uint(blockhash(block.number-1));
-        hour[_t] = (entropy[_t]%24)*1 hours;
-    }
     function _shuffle(uint _t) internal {
-        if(shuffled[_t] == 0) initializeRandomization(_t);
+        if(shuffled[_t] == 0) {
+            entropy = uint(blockhash(block.number-1));
+            hour = (entropy%24)*1 hours;
+        }
         shuffled[_t]++;
         uint _shuffled = shuffled[_t];
-        uint randomNumber = _shuffled + entropy[_t]%(registered[_t][Rank.Pair] + 1 - _shuffled);
-        entropy[_t] = uint(keccak256(abi.encodePacked(entropy[_t], registryIndex[_t][Rank.Pair][randomNumber])));
+        uint randomNumber = _shuffled + entropy%(registered[_t][Rank.Pair] + 1 - _shuffled);
+        entropy = uint(keccak256(abi.encodePacked(entropy, registryIndex[_t][Rank.Pair][randomNumber])));
         (registryIndex[_t][Rank.Pair][_shuffled], registryIndex[_t][Rank.Pair][randomNumber]) = (registryIndex[_t][Rank.Pair][randomNumber], registryIndex[_t][Rank.Pair][_shuffled]); 
         registry[_t][registryIndex[_t][Rank.Pair][_shuffled]].id = _shuffled;
     }
@@ -145,7 +144,7 @@ contract Polytopia {
         registry[t][msg.sender].verified = true;
     }
     function _verify(address _account, address _signer, uint t) internal {
-        require(inState(hour[t], 0, t));
+        require(inState(hour, 0, t));
         require(_account != _signer);
         uint id = registry[t][_account].id;
         require(id != 0);
