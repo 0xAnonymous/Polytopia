@@ -9,6 +9,7 @@ contract Polytopia {
     function schedule() public view returns (uint) { return genesis + ((block.timestamp - genesis) / period) * period; }
 
     mapping (uint => uint) public entropy;
+
     mapping (uint => uint) public hour;
 
     enum Rank { Court, Pair }
