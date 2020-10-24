@@ -46,6 +46,7 @@ contract Polytopia {
         uint genesisPopulation;
         balanceOf[t][Token.Registration][genesisAccount] = genesisPopulation;
     }
+
     function initializeRandomization(uint _t) internal {
         entropy[_t] = uint(blockhash(block.number-1));
         hour[_t] = (entropy[_t]%24)*1 hours;
