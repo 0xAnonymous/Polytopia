@@ -62,7 +62,7 @@ contract Polytopia {
     function shuffle() external {
         uint t = schedule(); 
         require(inState(randomize, premeet, t));
-        require(committed[t][msg.sender] == false);
+        require((registry[_t][msg.sender].rank == Rank.Pair && committed[t][msg.sender] == false);
         committed[t][msg.sender] = true;
         _shuffle(t);
     }
