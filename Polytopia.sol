@@ -12,9 +12,9 @@ contract Polytopia {
 
     uint entropy;
 
-    enum Rank { Pair, Court }
+    enum Rank { Court, Pair }
 
-    enum Token { Registration, Immigration, Personhood, Verified }
+    enum Token { Immigration, Registration, Personhood, Verified }
 
     struct Reg {
         Rank rank;
@@ -48,8 +48,8 @@ contract Polytopia {
     }
 
     function initializeRandomization() internal {
-            entropy = uint(blockhash(block.number-1));
-            hour = (entropy%24)*1 hours;
+        entropy = uint(blockhash(block.number-1));
+        hour = (entropy%24)*1 hours;
     }
     function _shuffle(uint _t) internal {
         if(shuffled[_t] == 0) initializeRandomization();
