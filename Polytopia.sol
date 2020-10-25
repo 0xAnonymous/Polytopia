@@ -14,7 +14,7 @@ contract Polytopia {
 
     enum Rank { Court, Pair }
 
-    enum Token { Personhood, Registration, Immigration }
+    enum Token { Personhood, Registration, Immigration, Verified }
 
     struct Reg {
         Rank rank;
@@ -47,11 +47,12 @@ contract Polytopia {
         balanceOf[schedule()][Token.Registration][genesisAccount] = genesisPopulation;
     }
 
-    function _shuffle(uint _t) internal {
-        if(shuffled[_t] == 0) {
+    function initializeRandomization() internal {
             entropy = uint(blockhash(block.number-1));
             hour = (entropy%24)*1 hours;
-        }
+    }
+    function _shuffle(uint _t) internal {
+        if(shuffled[_t] == 0) initializeRandomization();
         shuffled[_t]++;
         uint _shuffled = shuffled[_t];
         uint randomNumber = _shuffled + entropy%(registered[_t][Rank.Pair] + 1 - _shuffled);
@@ -81,7 +82,6 @@ contract Polytopia {
         registered[t][Rank.Pair]++;
         registryIndex[t][Rank.Pair][registered[t][Rank.Pair]] = msg.sender;
         registry[t][msg.sender].rank = Rank.Pair;
-        balanceOf[t+period][Token.Immigration][msg.sender]++;
     }
     function immigrate() external {
         uint t = schedule();
@@ -93,8 +93,6 @@ contract Polytopia {
         uint courts = registered[t][Rank.Court];
         registryIndex[t][Rank.Court][courts] = msg.sender;
         registry[t][msg.sender].id = courts;
-        uint authorizeBorderToken = 1 + (courts - 1)%registered[t-period][Rank.Pair];
-        balanceOf[t][Token.Immigration][registryIndex[t-period][Rank.Pair][authorizeBorderToken]]++;
     }
     
     function isVerified(Rank _rank, uint _unit, uint t) public view returns (bool) {
@@ -128,28 +126,12 @@ contract Polytopia {
         registry[t][msg.sender].id = court;
         registryIndex[t][Rank.Court][court] = msg.sender;        
     }
-    function completeVerification() external {
-        uint t = schedule()-period;
-        require(registry[t][msg.sender].verified == false);
-        uint id = registry[t][msg.sender].id;
-        uint pair;
-        if(registry[t][msg.sender].rank == Rank.Court) {
-            require(isVerified(Rank.Court, id, t));
-            pair = 1 + (id - 1)%(registered[t][Rank.Pair]/2);
-        }
-        else pair = (id + 1) /2;
-        require(isVerified(Rank.Pair, pair, t));
-        balanceOf[t+period][Token.Personhood][msg.sender]++;
-        balanceOf[t+period][Token.Registration][msg.sender]++;
-        registry[t][msg.sender].verified = true;
-    }
     function _verify(address _account, address _signer, uint t) internal {
         require(inState(hour, 0, t));
         require(_account != _signer);
+        require(registry[t][_signer].rank == Rank.Pair && committed[t][_signer] == true);
         uint id = registry[t][_account].id;
-        require(id != 0);
-        uint peer = registry[t][_signer].id;
-        require(registry[t][_signer].rank == Rank.Pair && committed[t][_signer] == true && peer != 0);
+        require(id != 0);        
         Rank rank = registry[t][_account].rank;
         uint unit;
         uint pair;
@@ -162,7 +144,8 @@ contract Polytopia {
             pair = 1 + (unit - 1)%(registered[t][Rank.Pair]/2);
         }
         require(disputed[t][pair] == false);
-        require(pair == (peer+1)/2);
+        uint peer = registry[t][_signer].id;
+        require(peer != 0 && pair == (peer+1)/2);
         judgement[t][rank][unit][peer%2] = true;
     }
     function verify(address _account) external { _verify(_account, msg.sender, schedule()-period); }
@@ -176,6 +159,28 @@ contract Polytopia {
         uint t = schedule()-period; bytes32 _msgHash = msgHash(t);
         _verify(msg.sender, ecrecover(_msgHash, v[0], r[0], s[0]), t);
         _verify(msg.sender, ecrecover(_msgHash, v[1], r[1], s[1]), t);
+    }
+    function completeVerification() external {
+        uint t = schedule()-period;
+        require(registry[t][msg.sender].verified == false);
+        uint id = registry[t][msg.sender].id;
+        uint pair;
+        if(registry[t][msg.sender].rank == Rank.Court) {
+            require(isVerified(Rank.Court, id, t));
+            pair = 1 + (id - 1)%(registered[t][Rank.Pair]/2);
+        }
+        else pair = (id + 1) /2;
+        require(isVerified(Rank.Pair, pair, t));
+        balanceOf[t+period][Token.Verified][msg.sender]++;
+        registry[t][msg.sender].verified = true;
+    }
+    function collectTokens() external {
+        uint t = schedule();
+        require(balanceOf[t][Token.Verified][msg.sender] >= 1);
+        balanceOf[t][Token.Verified][msg.sender]--;
+        balanceOf[t][Token.Personhood][msg.sender]++;
+        balanceOf[t][Token.Registration][msg.sender]++;
+        balanceOf[t][Token.Immigration][msg.sender]++;
     }
     function claimPersonhood() external {
         uint t = schedule();
