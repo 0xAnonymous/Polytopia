@@ -170,9 +170,9 @@ contract Polytopia {
         uint t = schedule();
         require(balanceOf[t][Token.Verified][msg.sender] >= 1);
         balanceOf[t][Token.Verified][msg.sender]--;
+        balanceOf[t][Token.Personhood][msg.sender]++;
         balanceOf[t][Token.Registration][msg.sender]++;
         balanceOf[t][Token.Immigration][msg.sender]++;
-        balanceOf[t][Token.Personhood][msg.sender]++;
     }
     function claimPersonhood() external {
         uint t = schedule();
