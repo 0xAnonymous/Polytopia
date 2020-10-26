@@ -14,7 +14,7 @@ contract Polytopia {
 
     enum Rank { Court, Pair }
 
-    enum Token { Immigration, Registration, Personhood, Verified }
+    enum Token { Personhood, Registration, Immigration, Verified }
 
     struct Reg {
         Rank rank;
@@ -76,7 +76,7 @@ contract Polytopia {
         uint t = schedule();
         require(inState(0, randomize, t));
         require(registry[t][msg.sender].id == 0 && registry[t][msg.sender].rank != Rank.Pair);
-        Token _token = Token(uint(_rank));
+        Token _token = Token(2-uint(_rank));
         require(balanceOf[t][_token][msg.sender] >= 1);
         balanceOf[t][_token][msg.sender]--;
         registered[t][_rank]++;
