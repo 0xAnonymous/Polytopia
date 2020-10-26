@@ -179,13 +179,13 @@ contract Polytopia {
         proofOfPersonhood[t][msg.sender] = population[t];
         personhoodIndex[t][population[t]] = msg.sender;
     }
-    function transfer(uint _t, address _from, address to, uint _value, Token _token) internal { 
+    function _transfer(uint _t, address _from, address to, uint _value, Token _token) internal { 
         require(balanceOf[_t][_token][_from] >= _value);
         balanceOf[_t][_token][_from] -= _value;
         balanceOf[_t][_token][to] += _value;        
     }
     function transfer(address to, uint _value, Token _token) external {
-        transfer(schedule(), msg.sender, to, _value, _token);
+        _transfer(schedule(), msg.sender, to, _value, _token);
     }
     function approve(address _spender, uint _value, Token _token) external {
         allowed[schedule()][_token][msg.sender][_spender] = _value;
