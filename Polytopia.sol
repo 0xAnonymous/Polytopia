@@ -36,9 +36,9 @@ contract Polytopia {
     mapping (uint => mapping (Token => mapping (address => uint))) public balanceOf;
     mapping (uint => mapping (Token => mapping (address => mapping (address => uint)))) public allowed;
 
-    function inState(uint _prev, uint _next, uint t) internal view returns (bool) {
-        if(_prev != 0) return (block.timestamp > t + _prev);
-        if(_next != 0) return (block.timestamp < t + _next);
+    function inState(uint _prev, uint _next, uint _t) internal view returns (bool) {
+        if(_prev != 0) return (block.timestamp > _t + _prev);
+        if(_next != 0) return (block.timestamp < _t + _next);
     }
 
     constructor() public {
@@ -142,15 +142,12 @@ contract Polytopia {
     }
     function verify(address _account) external { _verify(_account, msg.sender, schedule()-period); }
 
-    function msgHash(uint _t) internal view returns (bytes32) { return keccak256(abi.encodePacked(msg.sender, _t)); }
-
-    function uploadSignature(bytes32 r, bytes32 s, uint8 v) external {
-        uint t = schedule()-period; _verify(msg.sender, ecrecover(msgHash(t), v, r, s), t);
-    }
-    function courtSignature(bytes32[2] calldata r, bytes32[2] calldata s, uint8[2] calldata v) external {
-        uint t = schedule()-period; bytes32 _msgHash = msgHash(t);
-        _verify(msg.sender, ecrecover(_msgHash, v[0], r[0], s[0]), t);
-        _verify(msg.sender, ecrecover(_msgHash, v[1], r[1], s[1]), t);
+    function uploadSignature(address[] calldata _account, bytes32[] calldata r, bytes32[] calldata s, uint8[] calldata v) external {
+        uint t = schedule()-period;
+        for(uint i = 0; i < _account.length; i++) {
+            bytes32 _msgHash = keccak256(abi.encodePacked(_account[i], t));
+            _verify(_account[i], ecrecover(_msgHash, v[i], r[i], s[i]), t);
+        }
     }
     function completeVerification() external {
         uint t = schedule()-period;
@@ -182,10 +179,10 @@ contract Polytopia {
         proofOfPersonhood[t][msg.sender] = population[t];
         personhoodIndex[t][population[t]] = msg.sender;
     }
-    function transfer(uint t, address _from, address to, uint _value, Token _token) internal { 
-        require(balanceOf[t][_token][_from] >= _value);
-        balanceOf[t][_token][_from] -= _value;
-        balanceOf[t][_token][to] += _value;        
+    function transfer(uint _t, address _from, address to, uint _value, Token _token) internal { 
+        require(balanceOf[_t][_token][_from] >= _value);
+        balanceOf[_t][_token][_from] -= _value;
+        balanceOf[_t][_token][to] += _value;        
     }
     function transfer(address to, uint _value, Token _token) external {
         transfer(schedule(), msg.sender, to, _value, _token);
