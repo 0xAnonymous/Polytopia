@@ -184,16 +184,16 @@ contract Polytopia {
         balanceOf[_t][_token][_from] -= _value;
         balanceOf[_t][_token][_to] += _value;        
     }
-    function transfer(address to, uint _value, Token _token) external {
-        _transfer(schedule(), msg.sender, to, _value, _token);
+    function transfer(address _to, uint _value, Token _token) external {
+        _transfer(schedule(), msg.sender, _to, _value, _token);
     }
     function approve(address _spender, uint _value, Token _token) external {
         allowed[schedule()][_token][msg.sender][_spender] = _value;
     }
-    function transferFrom(address _from, address to, uint _value, Token _token) external {
+    function transferFrom(address _from, address _to, uint _value, Token _token) external {
         uint t = schedule();
         require(allowed[t][_token][_from][msg.sender] >= _value);
-        transfer(t, _from, to, _value, _token);
+        _transfer(t, _from, _to, _value, _token);
         allowed[t][_token][_from][msg.sender] -= _value;
     }
 }
