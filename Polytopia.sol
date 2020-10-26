@@ -73,16 +73,16 @@ contract Polytopia {
         for (uint i = 0; i < _iterations; i++) _shuffle(t); 
     }
     function _register(Rank _rank) internal {
-        uint _t = schedule();
-        require(inState(0, randomize, _t));
-        require(registry[_t][msg.sender].id == 0 && registry[_t][msg.sender].rank != Rank.Pair);
+        uint t = schedule();
+        require(inState(0, randomize, t));
+        require(registry[t][msg.sender].id == 0 && registry[t][msg.sender].rank != Rank.Pair);
         Token _token = Token(uint(_rank));
-        require(balanceOf[_t][_token][msg.sender] >= 1);
-        balanceOf[_t][_token][msg.sender]--;
-        registered[_t][_rank]++;
-        registryIndex[_t][_rank][registered[_t][_rank]] = msg.sender;
-        registry[_t][msg.sender].rank = _rank;
-        if(_rank != Rank.Pair) registry[_t][msg.sender].id = registered[_t][Rank.Court];
+        require(balanceOf[t][_token][msg.sender] >= 1);
+        balanceOf[t][_token][msg.sender]--;
+        registered[t][_rank]++;
+        registryIndex[t][_rank][registered[t][_rank]] = msg.sender;
+        registry[t][msg.sender].rank = _rank;
+        if(_rank != Rank.Pair) registry[t][msg.sender].id = registered[t][Rank.Court];
     }
     function register() external { _register(Rank.Pair); }
     function immigrate() external { _register(Rank.Court); }
@@ -118,13 +118,13 @@ contract Polytopia {
         registry[t][msg.sender].id = court;
         registryIndex[t][Rank.Court][court] = msg.sender;        
     }
-    function _verify(address _account, address _signer, uint t) internal {
-        require(inState(hour, 0, t));
+    function _verify(address _account, address _signer, uint _t) internal {
+        require(inState(hour, 0, _t));
         require(_account != _signer);
-        require(registry[t][_signer].rank == Rank.Pair && committed[t][_signer] == true);
-        uint id = registry[t][_account].id;
+        require(registry[_t][_signer].rank == Rank.Pair && committed[_t][_signer] == true);
+        uint id = registry[_t][_account].id;
         require(id != 0);        
-        Rank rank = registry[t][_account].rank;
+        Rank rank = registry[_t][_account].rank;
         uint unit;
         uint pair;
         if(rank == Rank.Pair) {
@@ -133,12 +133,12 @@ contract Polytopia {
         }
         else {
             unit = id;
-            pair = 1 + (unit - 1)%(registered[t][Rank.Pair]/2);
+            pair = 1 + (unit - 1)%(registered[_t][Rank.Pair]/2);
         }
-        require(disputed[t][pair] == false);
-        uint peer = registry[t][_signer].id;
+        require(disputed[_t][pair] == false);
+        uint peer = registry[_t][_signer].id;
         require(peer != 0 && pair == (peer+1)/2);
-        judgement[t][rank][unit][peer%2] = true;
+        judgement[_t][rank][unit][peer%2] = true;
     }
     function verify(address _account) external { _verify(_account, msg.sender, schedule()-period); }
 
