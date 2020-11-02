@@ -74,7 +74,8 @@ contract Polytopia {
         uint _shuffled = shuffled[_t];
         uint randomNumber = _shuffled + entropy%(registered[_t][Rank.Pair] + 1 - _shuffled);
         entropy = uint(keccak256(abi.encodePacked(entropy, registryIndex[_t][Rank.Pair][randomNumber])));
-        (registryIndex[_t][Rank.Pair][_shuffled], registryIndex[_t][Rank.Pair][randomNumber]) = (registryIndex[_t][Rank.Pair][randomNumber], registryIndex[_t][Rank.Pair][_shuffled]); 
+        (registryIndex[_t][Rank.Pair][_shuffled], registryIndex[_t][Rank.Pair][randomNumber]) =
+        (registryIndex[_t][Rank.Pair][randomNumber], registryIndex[_t][Rank.Pair][_shuffled]); 
         registry[_t][registryIndex[_t][Rank.Pair][_shuffled]].id = _shuffled;
     }
     function shuffle() external {
