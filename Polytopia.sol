@@ -46,13 +46,11 @@ contract Polytopia {
         if(_next != 0) return (block.timestamp < _t + _next);
     }
 
-    function immigrationFaucet() external { _transfer(schedule(), address(this), msg.sender, 1, Token.Immigration); }
-
     constructor() public {
         address genesisAccount = 0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308;
         uint genesisPopulation = 2;
         balanceOf[schedule()][Token.Registration][genesisAccount] = genesisPopulation;
-        balanceOf[schedule()][Token.Immigration][address(this)] = genesisPopulation;
+        balanceOf[schedule()][Token.Immigration][genesisAccount] = genesisPopulation;
     }
 
     function _register(Rank _rank) internal {
@@ -155,7 +153,7 @@ contract Polytopia {
             _verify(_account[i], ecrecover(_msgHash, v[i], r[i], s[i]), t);
         }
     }
-    function completeVerification(bool _immigrationFacuet) external {
+    function completeVerification() external {
         uint t = schedule()-period;
         require(registry[t][msg.sender].verified == false);
         uint id = registry[t][msg.sender].id;
@@ -168,8 +166,7 @@ contract Polytopia {
         require(isVerified(Rank.Pair, pair, t));
         balanceOf[t+period][Token.Personhood][msg.sender]++;
         balanceOf[t+period][Token.Registration][msg.sender]++;
-        if(_immigrationFacuet == true) balanceOf[t+period][Token.Immigration][address(this)]++;
-        else balanceOf[t+period][Token.Immigration][msg.sender]++;
+        balanceOf[t+period][Token.Immigration][msg.sender]++;        
         registry[t][msg.sender].verified = true;
     }
     function claimPersonhood() external {
