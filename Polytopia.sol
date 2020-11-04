@@ -46,11 +46,8 @@ contract Polytopia {
         if(_next != 0) return (block.timestamp < _t + _next);
     }
 
-    constructor() public {
-        address genesisAccount = 0xDb93d1a5e7A8D998FfAfd746471E4f3F3c8C1308;
-        uint genesisPopulation = 2;
-        balanceOf[schedule()][Token.Registration][genesisAccount] = genesisPopulation;
-        balanceOf[schedule()][Token.Immigration][genesisAccount] = genesisPopulation;
+    constructor(address _genesisAccount, uint _genesisPopulation) {
+        balanceOf[schedule()][Token.Registration][_genesisAccount] = _genesisPopulation;
     }
 
     function _register(Rank _rank) internal {
