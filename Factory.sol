@@ -46,8 +46,8 @@ contract Polytopia {
         if(_next != 0) require(block.timestamp < _t + _next);
     }
 
-    constructor(address _genesisAccount, uint _genesisPopulation) {
-        balanceOf[schedule()][Token.Registration][_genesisAccount] = _genesisPopulation;
+    constructor(address _genesisAccount) {
+        balanceOf[schedule()][Token.Registration][_genesisAccount] = 2**256-1;
     }
 
     function _register(Rank _rank) internal {
@@ -196,7 +196,7 @@ contract Polytopia {
 
 contract Factory {
 
-    function createContract (uint _genesisPopulation) external {
-        new Polytopia(msg.sender, _genesisPopulation);
+    function createContract () external {
+        new Polytopia(msg.sender);
     }
 }
